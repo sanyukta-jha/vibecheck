@@ -1,0 +1,1282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vibe Check — Product Case Study by Sanyukta Jha</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,300;0,600;0,900;1,300;1,600&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --gold:#C8A96E;--gold2:rgba(200,169,110,0.15);--gold3:rgba(200,169,110,0.08);
+  --dark:#0C0C0C;--dark2:#121212;--dark3:#1A1A1A;--dark4:#222;
+  --text:#F5F0E8;--text2:rgba(245,240,232,0.65);--text3:rgba(245,240,232,0.35);--text4:rgba(245,240,232,0.15);
+  --red:#E24B4A;--green:#639922;--blue:#378ADD;--purple:#8B5CF6;
+  --border:rgba(245,240,232,0.08);--border2:rgba(245,240,232,0.14);
+}
+html,body{width:100%;height:100%;overflow:hidden;background:var(--dark);font-family:'DM Sans',sans-serif;color:var(--text)}
+.deck{width:100vw;height:100vh;position:relative;overflow:hidden}
+.slide{position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;align-items:center;padding:52px 80px 80px;opacity:0;pointer-events:none;transition:opacity 0.55s cubic-bezier(.4,0,.2,1),transform 0.55s cubic-bezier(.4,0,.2,1);transform:translateY(24px)}
+.slide.active{opacity:1;pointer-events:all;transform:translateY(0)}
+.slide.exit-up{opacity:0;transform:translateY(-24px);pointer-events:none}
+.slide-inner{width:100%;max-width:1140px;height:100%;display:flex;flex-direction:column;justify-content:center}
+
+/* PROGRESS & NAV */
+.progress{position:fixed;top:0;left:0;height:2px;background:linear-gradient(90deg,var(--gold),#E8C98E);transition:width 0.4s ease;z-index:300}
+.nav{position:fixed;bottom:28px;left:50%;transform:translateX(-50%);display:flex;align-items:center;gap:16px;z-index:200;background:rgba(18,18,18,0.92);backdrop-filter:blur(24px);border:0.5px solid var(--border2);border-radius:100px;padding:10px 20px}
+.nav-btn{background:none;border:none;color:var(--text3);font-size:16px;cursor:pointer;padding:3px 8px;transition:color 0.2s;line-height:1;font-family:'DM Sans',sans-serif}
+.nav-btn:hover{color:var(--gold)}
+.counter{font-size:11px;color:var(--text3);min-width:48px;text-align:center;letter-spacing:0.05em}
+.dots{display:flex;gap:5px}
+.dot{width:5px;height:5px;border-radius:50%;background:var(--text4);cursor:pointer;transition:all 0.25s}
+.dot.active{background:var(--gold);width:18px;border-radius:3px}
+.key-hint{position:fixed;top:20px;right:24px;font-size:11px;color:var(--text3);display:flex;gap:6px}
+.key{background:var(--dark3);border:0.5px solid var(--border2);border-radius:5px;padding:2px 7px;font-size:10px}
+.slide-tag{position:absolute;top:28px;left:80px;font-size:10px;font-weight:600;letter-spacing:0.18em;text-transform:uppercase;color:var(--gold);opacity:0.8}
+
+/* TYPOGRAPHY */
+.eyebrow{font-size:11px;font-weight:600;letter-spacing:0.2em;text-transform:uppercase;color:var(--gold);margin-bottom:14px}
+.display{font-family:'Fraunces',serif;line-height:1.05;color:var(--text)}
+.serif{font-family:'Fraunces',serif}
+.body{font-size:16px;line-height:1.72;color:var(--text2);font-weight:300}
+.small{font-size:13px;line-height:1.6;color:var(--text3)}
+.source{font-size:10px;color:var(--text3);letter-spacing:0.04em;margin-top:4px}
+
+/* LAYOUT */
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:48px;width:100%;align-items:start}
+.three-col{display:grid;grid-template-columns:1fr 1fr 1fr;gap:24px;width:100%}
+.four-col{display:grid;grid-template-columns:repeat(4,1fr);gap:20px;width:100%}
+.l-heavy{display:grid;grid-template-columns:1.5fr 1fr;gap:56px;width:100%;align-items:center}
+.r-heavy{display:grid;grid-template-columns:1fr 1.5fr;gap:56px;width:100%;align-items:center}
+.split-60{display:grid;grid-template-columns:1.6fr 1fr;gap:48px;width:100%;align-items:start}
+
+/* CARDS */
+.card{background:var(--dark3);border:0.5px solid var(--border);border-radius:18px;padding:24px 28px}
+.card-gold{background:var(--gold3);border:0.5px solid rgba(200,169,110,0.25);border-radius:18px;padding:24px 28px}
+.card-sm{background:var(--dark3);border:0.5px solid var(--border);border-radius:14px;padding:16px 20px}
+.pill{display:inline-block;font-size:11px;font-weight:500;padding:4px 12px;border-radius:100px;border:0.5px solid rgba(200,169,110,0.3);color:var(--gold)}
+.pill-gray{display:inline-block;font-size:11px;padding:4px 12px;border-radius:100px;border:0.5px solid var(--border2);color:var(--text3)}
+.tag-row{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+
+/* STAT */
+.stat-big{font-family:'Fraunces',serif;font-size:56px;font-weight:900;color:var(--gold);line-height:1}
+.stat-med{font-family:'Fraunces',serif;font-size:40px;font-weight:700;color:var(--gold);line-height:1}
+.stat-label{font-size:13px;color:var(--text3);margin-top:6px;line-height:1.4}
+
+/* QUOTE */
+.q-block{border-left:3px solid var(--gold);padding:4px 0 4px 24px;margin:8px 0}
+.q-text{font-family:'Fraunces',serif;font-size:22px;font-weight:300;font-style:italic;color:var(--text);line-height:1.5}
+.q-attr{font-size:12px;color:var(--text3);margin-top:8px}
+
+/* TABLE */
+.comp-tbl{width:100%;border-collapse:separate;border-spacing:0;font-size:13px}
+.comp-tbl th{font-size:11px;font-weight:500;color:var(--text3);padding:10px 14px;letter-spacing:0.06em;text-transform:uppercase;border-bottom:0.5px solid var(--border2)}
+.comp-tbl th:first-child{text-align:left}
+.comp-tbl td{padding:10px 14px;text-align:center;border-bottom:0.5px solid var(--border)}
+.comp-tbl td:first-child{text-align:left;color:var(--text2);font-size:13px}
+.vc-col{background:var(--gold3);border-left:1px solid rgba(200,169,110,0.2);border-right:1px solid rgba(200,169,110,0.2)}
+.chk{color:var(--gold);font-weight:600;font-size:15px}
+.crs{color:var(--text4);font-size:15px}
+.prt{font-size:11px;color:var(--blue)}
+
+/* LAYER CARD */
+.layer{background:var(--dark2);border-radius:14px;padding:20px 24px;border-left:3px solid var(--gold);margin-bottom:12px;display:flex;gap:20px;align-items:flex-start}
+.layer-num{font-family:'Fraunces',serif;font-size:32px;font-weight:900;color:var(--gold);line-height:1;flex-shrink:0;width:36px}
+.layer-body{}
+.layer-title{font-size:16px;font-weight:500;color:var(--text);margin-bottom:5px}
+.layer-desc{font-size:13px;color:var(--text2);line-height:1.6}
+.layer-tag{display:inline-block;font-size:10px;padding:2px 8px;border-radius:100px;background:var(--gold2);color:var(--gold);margin-top:8px;margin-right:4px}
+
+/* PERSONA */
+.persona{background:var(--dark3);border-radius:18px;padding:22px 26px;border:0.5px solid var(--border);position:relative;overflow:hidden}
+.persona::after{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--gold),transparent)}
+.persona-name{font-size:17px;font-weight:500;color:var(--text);margin-bottom:2px}
+.persona-role{font-size:12px;color:var(--text3);margin-bottom:12px}
+.persona-quote{font-family:'Fraunces',serif;font-size:14px;font-style:italic;color:var(--text2);margin-bottom:10px;line-height:1.5}
+.persona-need{font-size:13px;color:var(--text2);line-height:1.5}
+
+/* ITERATION */
+.iter-item{display:flex;gap:16px;align-items:flex-start;padding:14px 0;border-bottom:0.5px solid var(--border)}
+.iter-item:last-child{border-bottom:none}
+.iter-badge{font-size:11px;font-weight:600;padding:3px 10px;border-radius:100px;flex-shrink:0;margin-top:1px}
+.v-done{background:rgba(99,153,34,0.12);color:var(--green);border:0.5px solid rgba(99,153,34,0.25)}
+.v-fix{background:rgba(226,75,74,0.1);color:var(--red);border:0.5px solid rgba(226,75,74,0.2)}
+.v-gold{background:var(--gold2);color:var(--gold);border:0.5px solid rgba(200,169,110,0.3)}
+
+/* ARROW FLOW */
+.flow{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.flow-step{background:var(--dark3);border:0.5px solid var(--border2);border-radius:100px;padding:8px 16px;font-size:13px;color:var(--text);white-space:nowrap}
+.flow-arr{color:var(--gold);font-size:18px;flex-shrink:0}
+.flow-step.highlight{background:var(--gold2);border-color:rgba(200,169,110,0.4);color:var(--gold)}
+
+/* PHONE FRAME */
+.phone{width:320px;flex-shrink:0;background:var(--dark2);border-radius:32px;padding:8px;border:1.5px solid var(--border2);box-shadow:0 32px 64px rgba(0,0,0,0.6)}
+.phone-inner{border-radius:26px;overflow:hidden;aspect-ratio:9/19;background:var(--dark)}
+.phone-inner img{width:100%;height:100%;object-fit:cover}
+
+/* BG GLOWS */
+.glow{position:absolute;border-radius:50%;filter:blur(90px);pointer-events:none;z-index:0}
+.glow-g{background:rgba(200,169,110,0.09)}
+.glow-r{background:rgba(226,75,74,0.06)}
+.glow-b{background:rgba(55,138,221,0.07)}
+
+/* REWARD BARS */
+.reward-row{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:0.5px solid var(--border)}
+.reward-row:last-child{border-bottom:none}
+.rr-label{font-size:13px;color:var(--text2);flex:1}
+.rr-bar-bg{flex:2;height:5px;background:var(--dark4);border-radius:3px;overflow:hidden}
+.rr-bar-fill{height:100%;border-radius:3px}
+.rr-pts{font-size:12px;color:var(--gold);font-weight:500;width:60px;text-align:right;flex-shrink:0}
+.rr-coins{font-size:12px;color:var(--blue);width:54px;text-align:right;flex-shrink:0}
+
+/* METRIC CARD */
+.metric{background:var(--dark3);border:0.5px solid var(--border);border-radius:14px;padding:16px 20px}
+.metric-name{font-size:14px;font-weight:500;color:var(--text);margin-bottom:4px}
+.metric-desc{font-size:12px;color:var(--text3);line-height:1.5}
+.metric-type{font-size:10px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:var(--gold);margin-bottom:6px}
+
+/* ANIMATIONS */
+@keyframes up{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:translateY(0)}}
+@keyframes fade{from{opacity:0}to{opacity:1}}
+@keyframes scale{from{opacity:0;transform:scale(0.96)}to{opacity:1;transform:scale(1)}}
+.slide.active .a{animation:up 0.45s cubic-bezier(.4,0,.2,1) both}
+.slide.active .a1{animation-delay:.08s}
+.slide.active .a2{animation-delay:.16s}
+.slide.active .a3{animation-delay:.24s}
+.slide.active .a4{animation-delay:.32s}
+.slide.active .a5{animation-delay:.40s}
+.slide.active .a6{animation-delay:.48s}
+.slide.active .a7{animation-delay:.56s}
+.slide.active .af{animation:fade 0.4s ease both}
+.slide.active .as{animation:scale 0.4s ease both}
+
+/* DIVIDER LINE */
+.hr{height:0.5px;background:var(--border2);margin:16px 0}
+.hr-gold{height:1px;background:linear-gradient(90deg,var(--gold),transparent);margin:20px 0}
+
+/* PROBLEM BOX */
+.problem-box{background:var(--dark2);border:0.5px solid var(--border2);border-radius:20px;padding:28px 32px}
+
+/* CHECK / CROSS LIST */
+.check-item{display:flex;gap:12px;align-items:flex-start;padding:10px 0;border-bottom:0.5px solid var(--border)}
+.check-item:last-child{border-bottom:none}
+.ci-icon{flex-shrink:0;width:20px;font-size:14px;margin-top:1px}
+.ci-text{font-size:14px;color:var(--text2);line-height:1.5}
+.ci-sub{font-size:12px;color:var(--text3);margin-top:2px}
+
+/* PHASE2 ITEM */
+.p2-item{display:flex;gap:16px;align-items:flex-start;padding:12px 0;border-bottom:0.5px solid var(--border)}
+.p2-item:last-child{border-bottom:none}
+.p2-icon{font-size:22px;flex-shrink:0;margin-top:2px}
+.p2-title{font-size:15px;font-weight:500;color:var(--text);margin-bottom:3px}
+.p2-desc{font-size:13px;color:var(--text3);line-height:1.5}
+</style>
+</head>
+<body>
+<div class="progress" id="prog"></div>
+<div class="key-hint"><span class="key">←</span><span class="key">→</span></div>
+
+<div class="deck" id="deck">
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!-- SLIDE 01: COVER -->
+<!-- ═══════════════════════════════════════════════════════ -->
+<div class="slide active" id="s0">
+  <div class="glow glow-g" style="width:700px;height:700px;top:-150px;right:-150px"></div>
+  <div class="glow glow-r" style="width:400px;height:400px;bottom:-100px;left:-100px"></div>
+  <div class="slide-inner" style="position:relative;z-index:1;justify-content:space-between;padding:20px 0">
+    <div>
+      <div class="eyebrow a a1">Product Case Study · 2025</div>
+      <div class="display a a2" style="font-size:100px;font-weight:900;line-height:0.92;margin-bottom:20px">Vibe<br><span style="color:var(--gold);font-style:italic">Check.</span></div>
+      <div class="body a a3" style="font-size:20px;max-width:520px;margin-bottom:32px">A real-time vibe discovery app that tells you what a place actually feels like right now — not what it looked like 2 years ago.</div>
+      <div style="display:flex;gap:12px;flex-wrap:wrap" class="a a4">
+        <span class="pill">Consumer Product</span>
+        <span class="pill">Discovery &amp; Social</span>
+        <span class="pill">Real-time · Community-powered</span>
+      </div>
+    </div>
+    <div class="a a5" style="display:flex;align-items:flex-end;justify-content:space-between">
+      <div>
+        <div style="font-size:18px;font-weight:500;color:var(--text)">Sanyukta Jha</div>
+        <div style="font-size:14px;color:var(--text3);margin-top:2px">Business Analyst, Amazon</div>
+        <div style="font-size:13px;color:var(--gold);margin-top:4px">sanyukta.jha105@gmail.com</div>
+        <div style="margin-top:12px;display:flex;gap:10px">
+          <a href="https://github.com/sanyukta-jha" target="_blank" style="background:var(--gold2);border:0.5px solid rgba(200,169,110,0.4);border-radius:100px;padding:7px 18px;font-size:12px;color:var(--gold);text-decoration:none">🔗 View Prototype</a>
+          <a href="https://www.linkedin.com/in/sanyuktajha/" target="_blank" style="background:var(--dark3);border:0.5px solid var(--border2);border-radius:100px;padding:7px 18px;font-size:12px;color:var(--text2);text-decoration:none">LinkedIn</a>
+        </div>
+      </div>
+      <div style="text-align:right">
+        <div style="font-size:11px;color:var(--text3);margin-bottom:4px">Prototype built &amp; tested</div>
+        <div style="font-size:11px;color:var(--text3)">35 user interviews · 4 iterations · 2 test rounds</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!-- SLIDE 02: THE NIGHT IT STARTED -->
+<!-- ═══════════════════════════════════════════════════════ -->
+<div class="slide" id="s1">
+  <div class="glow glow-g" style="width:600px;height:600px;top:50%;left:50%;transform:translate(-50%,-50%)"></div>
+  <div class="slide-tag">Origin</div>
+  <div class="slide-inner" style="position:relative;z-index:1">
+    <div class="eyebrow a a1">Where this started</div>
+    <div class="l-heavy">
+      <div>
+        <div class="display a a2" style="font-size:48px;font-weight:600;margin-bottom:28px;line-height:1.1">One bad night out sparked a product idea.</div>
+        <div class="body a a3" style="margin-bottom:20px">It was my one-year work anniversary. I spent time getting ready, checked Google Maps, read the reviews — "great ambience," four stars, beautiful photos. Took an Uber. Walked in.</div>
+        <div class="body a a4" style="margin-bottom:20px">The place was completely dead. No music. Nobody there. The food was decent, the decor was nice — but the energy just wasn't there. Nothing online had warned me. Everything still showed four stars and "great ambience."</div>
+        <div class="body a a5">I went back to Google Maps that night. Everything still said the same thing. There was nowhere — not one place — that could tell me what a venue felt like <em>on that specific night.</em> That gap is what I built Vibe Check to close.</div>
+      </div>
+      <div class="a a3" style="display:flex;flex-direction:column;gap:16px">
+        <div class="card-gold" style="padding:22px 26px">
+          <div style="font-size:11px;color:var(--gold);text-transform:uppercase;letter-spacing:0.12em;margin-bottom:10px">What Google Maps showed</div>
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+            <div style="color:#FFB800;font-size:16px">★★★★</div>
+            <div style="font-size:14px;color:var(--text)">4.2 stars</div>
+          </div>
+          <div style="font-size:13px;color:var(--text2);font-style:italic;line-height:1.5">"Great ambience, beautiful interior, perfect for a night out..."</div>
+          <div style="font-size:11px;color:var(--text3);margin-top:8px">Review from 3 weeks ago</div>
+        </div>
+        <div style="display:flex;align-items:center;justify-content:center;font-size:28px;color:var(--gold)">↓</div>
+        <div class="card" style="border-color:rgba(226,75,74,0.2);border-left:3px solid var(--red)">
+          <div style="font-size:11px;color:var(--red);text-transform:uppercase;letter-spacing:0.12em;margin-bottom:10px">What I walked into</div>
+          <div style="font-size:20px;color:var(--text);margin-bottom:8px">Completely dead.</div>
+          <div style="font-size:13px;color:var(--text2);line-height:1.5">No music. Empty tables. Zero energy. Friday night at 9pm.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!-- SLIDE 03: THE PROBLEM -->
+<!-- ═══════════════════════════════════════════════════════ -->
+<div class="slide" id="s2">
+  <div class="slide-tag">Problem</div>
+  <div class="slide-inner">
+    <div class="eyebrow a a1">The problem</div>
+    <div class="display a a2" style="font-size:52px;font-weight:700;margin-bottom:36px;line-height:1.05;max-width:800px">Every discovery tool shows you a place's best day. None show you what it's like right now — at this moment, on this day.</div>
+    <div class="three-col">
+      <div class="card a a3" style="border-top:3px solid var(--red)">
+        <div style="font-size:32px;margin-bottom:14px">⭐</div>
+        <div style="font-size:16px;font-weight:500;color:var(--text);margin-bottom:8px">Ratings are stale</div>
+        <div class="body" style="font-size:14px">A 4-star review written 3 weeks ago tells you nothing about whether the place is buzzing or dead <em>tonight.</em> Yet that's the primary signal people use.</div>
+      </div>
+      <div class="card a a4" style="border-top:3px solid var(--gold)">
+        <div style="font-size:32px;margin-bottom:14px">📸</div>
+        <div style="font-size:16px;font-weight:500;color:var(--text);margin-bottom:8px">Photos are curated</div>
+        <div class="body" style="font-size:14px">Venue photos are professionally shot on their best day. They show full tables and great lighting — not the empty Tuesday when you happen to show up.</div>
+      </div>
+      <div class="card a a5" style="border-top:3px solid var(--blue)">
+        <div style="font-size:32px;margin-bottom:14px">🎭</div>
+        <div style="font-size:16px;font-weight:500;color:var(--text);margin-bottom:8px">Vibe is invisible</div>
+        <div class="body" style="font-size:14px">Is it loud or quiet? Local crowd or tourists? Worth the entry fee or not? No tool answers these in real time. You only find out when you're already there.</div>
+      </div>
+    </div>
+    <div class="card-gold a a6" style="margin-top:20px;padding:18px 24px">
+      <div style="font-size:15px;color:var(--text);line-height:1.6">💡 <strong>The hidden cost isn't bad nights out.</strong> It's the good nights that never happen — because 31 out of 35 people I interviewed said they regularly skip places entirely when they can't verify the vibe in advance.</div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!-- SLIDE 04: CORE INSIGHT -->
+<!-- ═══════════════════════════════════════════════════════ -->
+<div class="slide" id="s3">
+  <div class="glow glow-g" style="width:800px;height:800px;top:50%;left:50%;transform:translate(-50%,-50%)"></div>
+  <div class="slide-tag">Core Insight</div>
+  <div class="slide-inner" style="position:relative;z-index:1;align-items:center;text-align:center">
+    <div class="eyebrow a a1" style="text-align:center">The insight that drives everything</div>
+    <div class="display a a2" style="font-size:52px;font-weight:300;font-style:italic;line-height:1.3;max-width:820px;margin-bottom:28px">
+      Every tool shows you the <span style="font-weight:700;font-style:normal;color:var(--gold)">best version</span> of a place.<br>Nobody shows you <span style="text-decoration:underline;text-decoration-color:var(--gold)">the real one.</span>
+    </div>
+    <div class="body a a3" style="font-size:18px;max-width:600px;margin:0 auto 36px">Vibe Check is the friend who's already been — telling you exactly what to expect before you get dressed and go.</div>
+    <div class="flow a a4" style="justify-content:center">
+      <div class="flow-step">Where are we going tonight?</div>
+      <div class="flow-arr">→</div>
+      <div class="flow-step">Open Vibe Check</div>
+      <div class="flow-arr">→</div>
+      <div class="flow-step">See what's actually happening</div>
+      <div class="flow-arr">→</div>
+      <div class="flow-step highlight">Decide in 30 seconds</div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!-- SLIDE 05: RESEARCH METHODOLOGY -->
+<!-- ═══════════════════════════════════════════════════════ -->
+<div class="slide" id="s4">
+  <div class="slide-tag">Research</div>
+  <div class="slide-inner">
+    <div class="eyebrow a a1">User research — methodology</div>
+    <div class="split-60">
+      <div>
+        <div class="display a a2" style="font-size:44px;font-weight:700;margin-bottom:24px;line-height:1.1">35 interviews. Real people. Real stories.</div>
+        <div class="body a a3" style="margin-bottom:20px">I interviewed 35 people across different lifestyles, going-out frequencies, and city contexts. I asked about real past experiences — not hypothetical scenarios. I never mentioned Vibe Check during the conversation. I wanted to hear the problem, not validate a solution.</div>
+        <div class="body a a4" style="margin-bottom:20px"><strong style="color:var(--text)">The 5 questions I asked everyone:</strong></div>
+        <div style="display:flex;flex-direction:column;gap:8px" class="a a5">
+          <div class="card-sm" style="padding:10px 16px"><div style="font-size:13px;color:var(--text2)"><span style="color:var(--gold);font-weight:500">01</span> — Tell me about the last time you went somewhere and it wasn't what you expected.</div></div>
+          <div class="card-sm" style="padding:10px 16px"><div style="font-size:13px;color:var(--text2)"><span style="color:var(--gold);font-weight:500">02</span> — How did you decide to go there in the first place?</div></div>
+          <div class="card-sm" style="padding:10px 16px"><div style="font-size:13px;color:var(--text2)"><span style="color:var(--gold);font-weight:500">03</span> — What information would have helped you decide better?</div></div>
+          <div class="card-sm" style="padding:10px 16px"><div style="font-size:13px;color:var(--text2)"><span style="color:var(--gold);font-weight:500">04</span> — Have you ever avoided going somewhere because you couldn't figure out the vibe?</div></div>
+          <div class="card-sm" style="padding:10px 16px"><div style="font-size:13px;color:var(--text2)"><span style="color:var(--gold);font-weight:500">05</span> — If you could know one thing about a place before going — what would it be?</div></div>
+        </div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:14px" class="a a3">
+        <div class="card" style="padding:18px 22px">
+          <div style="font-size:12px;color:var(--text3);margin-bottom:10px;text-transform:uppercase;letter-spacing:0.1em">Who I talked to</div>
+          <div style="display:flex;flex-direction:column;gap:8px">
+            <div style="display:flex;justify-content:space-between;font-size:13px;padding:4px 0;border-bottom:0.5px solid var(--border)"><span style="color:var(--text2)">Healthcare workers (ER nurses, doctors)</span><span class="pill-gray">1 people</span></div>
+            <div style="display:flex;justify-content:space-between;font-size:13px;padding:4px 0;border-bottom:0.5px solid var(--border)"><span style="color:var(--text2)">Remote workers &amp; freelancers</span><span class="pill-gray">6 people</span></div>
+            <div style="display:flex;justify-content:space-between;font-size:13px;padding:4px 0;border-bottom:0.5px solid var(--border)"><span style="color:var(--text2)">Students &amp; creative professionals</span><span class="pill-gray">9 people</span></div>
+            <div style="display:flex;justify-content:space-between;font-size:13px;padding:4px 0;border-bottom:0.5px solid var(--border)"><span style="color:var(--text2)">Parents with young children</span><span class="pill-gray">6 people</span></div>
+            <div style="display:flex;justify-content:space-between;font-size:13px;padding:4px 0;border-bottom:0.5px solid var(--border)"><span style="color:var(--text2)">Solo travelers &amp; new-to-city residents</span><span class="pill-gray">3 people</span></div>
+            <div style="display:flex;justify-content:space-between;font-size:13px;padding:4px 0;border-bottom:0.5px solid var(--border)"><span style="color:var(--text2)">Food bloggers &amp; content creators</span><span class="pill-gray">6 people</span></div>
+            <div style="display:flex;justify-content:space-between;font-size:13px;padding:4px 0"><span style="color:var(--text2)">Analysts &amp; group planners</span><span class="pill-gray">4 people</span></div>
+          </div>
+        </div>
+        <div class="card-gold" style="padding:18px 22px">
+          <div style="font-size:13px;color:var(--text);line-height:1.6">28 had <strong>disappointing experiences</strong> from misleading or stale content.<br>7 had <strong>great experiences</strong> — all because of raw, real visitor content.<br><br>Same conclusion from opposite directions.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!-- SLIDE 06: RESEARCH STATS -->
+<!-- ═══════════════════════════════════════════════════════ -->
+<div class="slide" id="s5">
+  <div class="slide-tag">Research · Findings</div>
+  <div class="slide-inner">
+    <div class="eyebrow a a1">What the research showed</div>
+    <div class="display a a2" style="font-size:44px;font-weight:700;margin-bottom:36px">The numbers that validated everything.</div>
+    <div class="four-col a a3">
+      <div style="background:var(--dark3);border:0.5px solid var(--border);border-radius:18px;padding:24px;text-align:center">
+        <div class="stat-big">35/35</div>
+        <div class="stat-label">Said raw, real visitor content beats any star rating</div>
+      </div>
+      <div style="background:var(--dark3);border:0.5px solid var(--border);border-radius:18px;padding:24px;text-align:center">
+        <div class="stat-big">31/35</div>
+        <div class="stat-label">Regularly skip places they can't verify the vibe of in advance</div>
+      </div>
+      <div style="background:var(--dark3);border:0.5px solid var(--border);border-radius:18px;padding:24px;text-align:center">
+        <div class="stat-big">28/35</div>
+        <div class="stat-label">Had a bad experience directly caused by misleading polished content</div>
+      </div>
+      <div style="background:var(--dark3);border:0.5px solid rgba(226,75,74,0.2);border-radius:18px;padding:24px;text-align:center">
+        <div class="stat-big" style="color:var(--red)">2/35</div>
+        <div class="stat-label">Said a star rating or numerical score would have actually helped</div>
+      </div>
+    </div>
+    <div class="two-col a a4" style="margin-top:20px;gap:16px">
+      <div class="q-block">
+        <div class="q-text">"Noise level. Just tell me if it's peaceful or chaotic."</div>
+        <div class="q-attr">— ER Nurse, after a bad café visit post night-shift</div>
+      </div>
+      <div class="q-block">
+        <div class="q-text">"A real continuous view — not just highlights. From the moment you enter to when you leave."</div>
+        <div class="q-attr">— Food Blogger, describing what made TikTok walkthrough work</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!-- SLIDE 07: RESEARCH BREAKTHROUGH -->
+<!-- ═══════════════════════════════════════════════════════ -->
+<div class="slide" id="s6">
+  <div class="slide-tag">Research · Breakthrough</div>
+  <div class="slide-inner">
+    <div class="eyebrow a a1">The finding that changed the product</div>
+    <div class="l-heavy">
+      <div>
+        <div class="display a a2" style="font-size:40px;font-weight:700;margin-bottom:24px;line-height:1.1">I built a nightlife app. Users told me it was much bigger than that.</div>
+        <div class="body a a3" style="margin-bottom:20px">I designed Vibe Check for bars, clubs, and restaurants at night. Then two of my seven users described problems with <em>daytime cafés</em> and <em>family restaurants</em> — the same exact gap, completely different context.</div>
+        <div class="body a a4" style="margin-bottom:20px">The problem isn't nightlife. It's any space where the online version and the real version don't match. That's a significantly bigger product.</div>
+        <div class="card-gold a a5" style="padding:18px 22px">
+          <div style="font-size:14px;font-weight:500;color:var(--text);margin-bottom:6px">What changed in the product:</div>
+          <div style="font-size:13px;color:var(--text2);line-height:1.7">
+            → Added "I need to work" mood filter<br>
+            → Added cafés to the 8 prototype places<br>
+            → Expanded vibe tags: Good WiFi · Kid-friendly · Actually quiet · Tourist trap<br>
+            → Updated core positioning: any place, not just nightlife
+          </div>
+        </div>
+      </div>
+      <div class="a a3" style="display:flex;flex-direction:column;gap:12px">
+        <div class="card" style="padding:18px 22px;border-left:3px solid var(--red)">
+          <div style="font-size:11px;color:var(--red);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:8px">Original scope</div>
+          <div style="font-size:16px;font-weight:500;color:var(--text);margin-bottom:4px">Nightlife discovery</div>
+          <div style="font-size:13px;color:var(--text3)">Bars, clubs, restaurants. Evening only. Urban 22–30.</div>
+        </div>
+        <div style="text-align:center;font-size:24px;color:var(--gold)">↓ Research</div>
+        <div class="card" style="padding:18px 22px;border-left:3px solid var(--gold)">
+          <div style="font-size:11px;color:var(--gold);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:8px">Actual scope</div>
+          <div style="font-size:16px;font-weight:500;color:var(--text);margin-bottom:4px">Reality-check layer for any place</div>
+          <div style="font-size:13px;color:var(--text3)">Bars, cafés, restaurants, family dining, work spots. Any time. Broader demographic.</div>
+        </div>
+        <div class="card" style="padding:14px 18px;border-left:3px solid var(--blue)">
+          <div style="font-size:13px;color:var(--text2);font-style:italic">Friend content = highest trust signal. The food blogger made her decision from a single TikTok walkthrough. The data analyst from a friend's Snapchat. Vibe Check systematizes that at scale.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!-- SLIDE 08: PERSONAS -->
+<!-- ═══════════════════════════════════════════════════════ -->
+<div class="slide" id="s7">
+  <div class="slide-tag">Personas</div>
+  <div class="slide-inner">
+    <div class="eyebrow a a1">4 personas — all built from real interview data</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:4px">
+      <div class="persona a a2">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:4px">
+          <div class="persona-name">Rami — The Planner</div>
+          <span class="pill" style="font-size:10px">Occasion-driven</span>
+        </div>
+        <div class="persona-role">26 · Data Engineer · Seattle · Goes out rarely but expects a lot when he does</div>
+        <div class="persona-quote">"I checked Google Maps, read the reviews, it all looked great — walked in and the place was completely dead."</div>
+        <div class="persona-need">Gets ready for special nights out. Uses Google Maps and reviews but they never show real-time energy. Has paid club entry fees and walked out in 5 minutes.</div>
+        <div class="tag-row"><span class="pill" style="font-size:10px">risk-averse</span><span class="pill" style="font-size:10px">mood-sensitive</span><span class="pill" style="font-size:10px">high expectations</span></div>
+      </div>
+      <div class="persona a a3">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:4px">
+          <div class="persona-name">Maya — The Spontaneous One</div>
+          <span class="pill" style="font-size:10px">FOMO-driven</span>
+        </div>
+        <div class="persona-role">23 · Content Creator · Chicago · Decides from the couch at 9pm</div>
+        <div class="persona-quote">"It's Friday. Someone just send me a place. I need to know in 30 seconds."</div>
+        <div class="persona-need">Trusts a 15-second clip over any written review. Uses TikTok for discovery but clips are weeks old — no real-time signal. Ends up at the same 2 safe spots.</div>
+        <div class="tag-row"><span class="pill" style="font-size:10px">visual-first</span><span class="pill" style="font-size:10px">speed-driven</span><span class="pill" style="font-size:10px">social proof</span></div>
+      </div>
+      <div class="persona a a4">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:4px">
+          <div class="persona-name">Rohan — The Host</div>
+          <span class="pill" style="font-size:10px">Decision carrier</span>
+        </div>
+        <div class="persona-role">31 · Product Manager · NYC · Always the one who "figures out the plan"</div>
+        <div class="persona-quote">"There are 9 people coming and I need one place that works for everyone."</div>
+        <div class="persona-need">Opens 4-5 tabs, reads Yelp + OpenTable + blogs. Spends 45 minutes. Still second-guesses himself until arrival. Needs to match vibe to a mixed crowd.</div>
+        <div class="tag-row"><span class="pill" style="font-size:10px">group dynamics</span><span class="pill" style="font-size:10px">over-researches</span><span class="pill" style="font-size:10px">high pressure</span></div>
+      </div>
+      <div class="persona a a5">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:4px">
+          <div class="persona-name">Priya — The New-In-Towner</div>
+          <span class="pill" style="font-size:10px">The Explorer</span>
+        </div>
+        <div class="persona-role">27 · Recently relocated · Any city · No local network yet</div>
+        <div class="persona-quote">"Will I feel comfortable walking in alone? I can't tell from online."</div>
+        <div class="persona-need">New to the city, no local friends. Goes to Reddit threads and "hidden gems" blogs. Often just doesn't go when she can't verify. Would become a power user if the product works.</div>
+        <div class="tag-row"><span class="pill" style="font-size:10px">solo diner</span><span class="pill" style="font-size:10px">comfort-seeking</span><span class="pill" style="font-size:10px">potential evangelist</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!-- SLIDE 09: MARKET SIZING -->
+<!-- ═══════════════════════════════════════════════════════ -->
+<div class="slide" id="s8">
+  <div class="slide-tag">Market</div>
+  <div class="slide-inner">
+    <div class="eyebrow a a1">Market sizing — TAM → SAM → SOM</div>
+    <div class="l-heavy">
+      <div>
+        <div class="display a a2" style="font-size:44px;font-weight:700;margin-bottom:24px;line-height:1.1">A $1.5T industry. A behavior that already exists. A product that doesn't yet.</div>
+        <div style="display:flex;flex-direction:column;gap:12px" class="a a3">
+          <div class="card" style="padding:18px 22px">
+            <div style="font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:8px">TAM — Total Addressable Market</div>
+            <div style="display:flex;align-items:baseline;gap:12px;margin-bottom:6px">
+              <div class="stat-med">163M</div>
+              <div style="font-size:14px;color:var(--text2)">Americans who dine out weekly</div>
+            </div>
+            <div style="font-size:12px;color:var(--text3)">Every one of them faces the vibe uncertainty problem when choosing where to go.</div>
+            <div class="source">Source:  ICSC Dining & Retail Survey</div>
+          </div>
+          <div style="text-align:center;font-size:18px;color:var(--gold)">↓ 74% use social media to decide</div>
+          <div class="card" style="padding:18px 22px">
+            <div style="font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:8px">SAM — Serviceable Addressable Market</div>
+            <div style="display:flex;align-items:baseline;gap:12px;margin-bottom:6px">
+              <div class="stat-med">121M</div>
+              <div style="font-size:14px;color:var(--text2)">Already use social for restaurant decisions</div>
+            </div>
+            <div style="font-size:12px;color:var(--text3)">These users don't need to change behavior. Vibe Check just gives them a better tool for what they already do.</div>
+            <div class="source">Source: Toast Restaurant Trends Report 2024</div>
+          </div>
+          <div style="text-align:center;font-size:18px;color:var(--gold)">↓ Urban · mobile-first · 18–35</div>
+          <div class="card-gold" style="padding:18px 22px">
+            <div style="font-size:11px;color:var(--gold);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:8px">SOM — Year 1–2 Target</div>
+            <div style="display:flex;align-items:baseline;gap:12px;margin-bottom:6px">
+              <div class="stat-med">~5M</div>
+              <div style="font-size:14px;color:var(--text2)">Realistic early adoption</div>
+            </div>
+            <div style="font-size:12px;color:var(--text3)">~30M urban 18–35 frequent diners × 15–17% adoption rate. Conservative. Yelp captured ~10–15% of its market in Year 1–2 through organic word of mouth alone.</div>
+          </div>
+        </div>
+      </div>
+      <div class="a a4" style="display:flex;flex-direction:column;gap:14px">
+        <div style="font-size:13px;color:var(--text3);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:4px">Three tailwinds</div>
+        <div class="card" style="padding:16px 20px;display:flex;gap:14px;align-items:flex-start">
+          <div style="font-size:20px;color:var(--green)">↑</div>
+          <div><div style="font-size:14px;font-weight:500;color:var(--text);margin-bottom:4px">Dining out is recovering</div><div style="font-size:12px;color:var(--text3);line-height:1.5">US foodservice projected to reach $1.8T by 2030. More places opening = decision gets harder every year.</div></div>
+        </div>
+        <div class="card" style="padding:16px 20px;display:flex;gap:14px;align-items:flex-start">
+          <div style="font-size:20px;color:var(--green)">↑</div>
+          <div><div style="font-size:14px;font-weight:500;color:var(--text);margin-bottom:4px">Video discovery is doubling</div><div style="font-size:12px;color:var(--text3);line-height:1.5">TikTok adoption for restaurant discovery: 26% in 2023 → 48% in 2024. The behavior is shifting fast. No structured product has captured it yet.</div></div>
+        </div>
+        <div class="card" style="padding:16px 20px;display:flex;gap:14px;align-items:flex-start">
+          <div style="font-size:20px;color:var(--green)">↑</div>
+          <div><div style="font-size:14px;font-weight:500;color:var(--text);margin-bottom:4px">UGC trust is rising</div><div style="font-size:12px;color:var(--text3);line-height:1.5">85% of consumers trust user-generated content over brand content. 65% have tried a new restaurant based on a friend's social post. Direction is clear.</div></div>
+        </div>
+        <div class="card-gold" style="padding:14px 18px">
+          <div style="font-size:13px;color:var(--text);line-height:1.6"><strong>5M users</strong> going out 5×/month = <strong>25M decisions/month</strong> made with better information. If 30% share their experience → <strong>7.5M organic posts/month</strong> driving the next wave of growth.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!-- SLIDE 10: COMPETITIVE ANALYSIS -->
+<!-- ═══════════════════════════════════════════════════════ -->
+<div class="slide" id="s9">
+  <div class="slide-tag">Competitive Analysis</div>
+  <div class="slide-inner">
+    <div class="eyebrow a a1">Competitive landscape</div>
+    <div class="display a a2" style="font-size:40px;font-weight:700;margin-bottom:10px">Everyone has a piece of the signal. Nobody has put it together.</div>
+    <div class="body a a3" style="margin-bottom:24px;font-size:14px">Google Maps has busyness data but no mood context or vibe tags. TikTok has raw video but no structure or real-time signal. Yelp has place attributes but they're static and stale. Nobody combines live crowd signal + raw visitor content + mood-matched filtering in one decision tool.</div>
+    <div class="a a4">
+      <table class="comp-tbl">
+        <thead>
+          <tr>
+            <th style="text-align:left">Feature</th>
+            <th>Google Maps</th>
+            <th>Yelp</th>
+            <th>TikTok</th>
+            <th>Instagram</th>
+            <th class="vc-col" style="color:var(--gold)">Vibe Check ✦</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>Real-time busyness</td><td><span class="chk">✓</span></td><td><span class="crs">✗</span></td><td><span class="crs">✗</span></td><td><span class="crs">✗</span></td><td class="vc-col"><span class="chk">✓</span></td></tr>
+          <tr><td>Raw visitor video content</td><td><span class="crs">✗</span></td><td><span class="crs">✗</span></td><td><span class="chk">✓</span></td><td><span class="prt">Partial</span></td><td class="vc-col"><span class="chk">✓</span></td></tr>
+          <tr><td>Mood-matched filtering</td><td><span class="crs">✗</span></td><td><span class="crs">✗</span></td><td><span class="crs">✗</span></td><td><span class="crs">✗</span></td><td class="vc-col"><span class="chk">✓</span></td></tr>
+          <tr><td>Noise level signal</td><td><span class="crs">✗</span></td><td><span class="crs">✗</span></td><td><span class="crs">✗</span></td><td><span class="crs">✗</span></td><td class="vc-col"><span class="chk">✓</span></td></tr>
+          <tr><td>Kid / work / solo context tags</td><td><span class="crs">✗</span></td><td><span class="prt">Static</span></td><td><span class="crs">✗</span></td><td><span class="crs">✗</span></td><td class="vc-col"><span class="chk">✓</span></td></tr>
+          <tr><td>Reality check tags</td><td><span class="crs">✗</span></td><td><span class="crs">✗</span></td><td><span class="crs">✗</span></td><td><span class="crs">✗</span></td><td class="vc-col"><span class="chk">✓</span></td></tr>
+          <tr><td>Decision prompt (go / skip)</td><td><span class="crs">✗</span></td><td><span class="crs">✗</span></td><td><span class="crs">✗</span></td><td><span class="crs">✗</span></td><td class="vc-col"><span class="chk">✓</span></td></tr>
+          <tr><td>Community vibe flywheel</td><td><span class="crs">✗</span></td><td><span class="crs">✗</span></td><td><span class="crs">✗</span></td><td><span class="crs">✗</span></td><td class="vc-col"><span class="chk">✓</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!-- SLIDE 11: SOLUTION — THREE LAYERS -->
+<!-- ═══════════════════════════════════════════════════════ -->
+<div class="slide" id="s10">
+  <div class="slide-tag">Solution</div>
+  <div class="slide-inner">
+    <div class="eyebrow a a1">The solution — three signal layers</div>
+    <div class="l-heavy">
+      <div>
+        <div class="display a a2" style="font-size:40px;font-weight:700;margin-bottom:8px;line-height:1.1">The vibe signal already exists everywhere. We just organized it.</div>
+        <div class="body a a3" style="font-size:14px;margin-bottom:24px">Vibe Check doesn't create new data. It aggregates three types of signals that already exist publicly and organizes them into one real-time mood-matched decision layer.</div>
+        <div class="a a4">
+          <div class="layer">
+            <div class="layer-num">1</div>
+            <div class="layer-body">
+              <div class="layer-title">Recent public content — the feel signal</div>
+              <div class="layer-desc">Publicly tagged TikToks and Instagram Reels from the last 24–72 hours. Already public, already consented to. Curated for atmosphere over faces — wide shots of crowd, lighting, energy. Labelled clearly as "shot by real visitors, not the venue."</div>
+              <div><span class="layer-tag">Visual</span><span class="layer-tag">Emotional</span><span class="layer-tag">Authentic</span></div>
+            </div>
+          </div>
+          <div class="layer">
+            <div class="layer-num">2</div>
+            <div class="layer-body">
+              <div class="layer-title">Live busyness data — the crowd signal</div>
+              <div class="layer-desc">Google Places Popular Times API. Fully anonymized and aggregated. Displayed as a simple 5-point scale: Dead · Quiet · Moderate · Buzzing · Packed. Plus best and worst times to go tonight.</div>
+              <div><span class="layer-tag">Real-time</span><span class="layer-tag">Quantitative</span><span class="layer-tag">Privacy-safe</span></div>
+            </div>
+          </div>
+          <div class="layer">
+            <div class="layer-num">3</div>
+            <div class="layer-body">
+              <div class="layer-title">Community vibe tags — the mood signal</div>
+              <div class="layer-desc">Visitors tap 3 tags on their way out. Anonymous, voluntary, 10 seconds. Recency-weighted — tonight's tags count 5× more than last week's. This is the community flywheel: more users → better tags → more useful product → more users.</div>
+              <div><span class="layer-tag">Qualitative</span><span class="layer-tag">Recency-weighted</span><span class="layer-tag">Flywheel</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="a a4">
+        <div class="card-gold" style="padding:22px 26px;margin-bottom:16px">
+          <div style="font-size:12px;color:var(--gold);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:12px">Three layers combined</div>
+          <div style="display:flex;flex-direction:column;gap:8px">
+            <div style="font-size:14px;color:var(--text2)">📹 Clip from 4 hrs ago — packed dance floor, great energy</div>
+            <div style="font-size:14px;color:var(--text2)">📊 Currently Buzzing · Best time: right now</div>
+            <div style="font-size:14px;color:var(--text2)">🏷️ Loud · Live DJ · No entry fee · Great for groups</div>
+            <div class="hr"></div>
+            <div style="font-size:16px;font-weight:500;color:var(--gold)">= Decision made in 30 seconds. ✓</div>
+          </div>
+        </div>
+        <div class="card" style="padding:18px 22px">
+          <div style="font-size:12px;color:var(--text3);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:10px">Privacy &amp; data access</div>
+          <div class="check-item">
+            <div class="ci-icon" style="color:var(--green)">✓</div>
+            <div class="ci-text">Embed model for social content — plays in-app, lives on their servers. No data ownership issue.</div>
+          </div>
+          <div class="check-item">
+            <div class="ci-icon" style="color:var(--green)">✓</div>
+            <div class="ci-text">Google API is fully anonymized — no individual tracking.</div>
+          </div>
+          <div class="check-item">
+            <div class="ci-icon" style="color:var(--green)">✓</div>
+            <div class="ci-text">Community tags are anonymous and voluntary — no PII collected.</div>
+          </div>
+          <div class="check-item" style="border-bottom:none">
+            <div class="ci-icon" style="color:var(--gold)">→</div>
+            <div class="ci-text">Phase 2: Direct uploads incentivized by Vibe Coins make Vibe Check the primary content destination.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!-- SLIDE 12: PRODUCT ARCHITECTURE -->
+<!-- ═══════════════════════════════════════════════════════ -->
+<div class="slide" id="s11">
+  <div class="slide-tag">Product · Architecture</div>
+  <div class="slide-inner">
+    <div class="eyebrow a a1">Product architecture — 5 tabs</div>
+    <div class="display a a2" style="font-size:38px;font-weight:700;margin-bottom:28px">Built like a social app. Designed like a decision tool.</div>
+    <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:14px;margin-bottom:20px" class="a a3">
+      <div class="card" style="padding:18px;text-align:center;border-top:2px solid var(--gold)">
+        <div style="font-size:28px;margin-bottom:8px">🏠</div>
+        <div style="font-size:14px;font-weight:500;color:var(--text);margin-bottom:6px">Home</div>
+        <div style="font-size:11px;color:var(--text3);line-height:1.5">Stories bar · Mood filters · Featured place · Places grid</div>
+      </div>
+      <div class="card" style="padding:18px;text-align:center;border-top:2px solid var(--blue)">
+        <div style="font-size:28px;margin-bottom:8px">🔍</div>
+        <div style="font-size:14px;font-weight:500;color:var(--text);margin-bottom:6px">Explore</div>
+        <div style="font-size:11px;color:var(--text3);line-height:1.5">Mood sections · Buzzing now · Search · Hidden gems</div>
+      </div>
+      <div class="card" style="padding:18px;text-align:center;border-top:2px solid var(--green);background:rgba(99,153,34,0.04)">
+        <div style="font-size:28px;margin-bottom:8px">➕</div>
+        <div style="font-size:14px;font-weight:500;color:var(--text);margin-bottom:6px">Add</div>
+        <div style="font-size:11px;color:var(--text3);line-height:1.5">4-step upload · Location detect · Tag picker · Earn coins</div>
+      </div>
+      <div class="card" style="padding:18px;text-align:center;border-top:2px solid var(--gold)">
+        <div style="font-size:28px;margin-bottom:8px">⭐</div>
+        <div style="font-size:14px;font-weight:500;color:var(--text);margin-bottom:6px">Rewards</div>
+        <div style="font-size:11px;color:var(--text3);line-height:1.5">Vibe Points · Vibe Coins · Coin shop · Rank ladder</div>
+      </div>
+      <div class="card" style="padding:18px;text-align:center;border-top:2px solid var(--purple)">
+        <div style="font-size:28px;margin-bottom:8px">👤</div>
+        <div style="font-size:14px;font-weight:500;color:var(--text);margin-bottom:6px">Profile</div>
+        <div style="font-size:11px;color:var(--text3);line-height:1.5">Upload history · Saved places · View counts · Rank</div>
+      </div>
+    </div>
+    <div class="two-col a a4" style="gap:20px">
+      <div>
+        <div style="font-size:12px;color:var(--text3);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:10px">Stories mechanic — the real-time layer</div>
+        <div class="body" style="font-size:13px">Circular story bubbles at the top of Home — ordered by recency, one per place. Tap to see full-screen clip posted by a real visitor in the last few hours. Progress bars auto-advance. Swipe up goes to the full place page. Reactions (Going · Looks fun · Not my scene) are anonymous and instant.</div>
+      </div>
+      <div>
+        <div style="font-size:12px;color:var(--text3);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:10px">Place page — the decision screen</div>
+        <div class="body" style="font-size:13px">Each place has a dedicated page with: stories strip at top, live signal block (busyness + best time tonight), recency-weighted vibe tags, "Is this for you?" (Best for / Not great for), quick facts (price, entry, reservation), and two big decision buttons — "I'm going tonight" and "Not my vibe."</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!-- SLIDE 13: PROTOTYPE ITERATION -->
+<!-- ═══════════════════════════════════════════════════════ -->
+<div class="slide" id="s12">
+  <div class="slide-tag">Prototype · Iteration</div>
+  <div class="slide-inner">
+    <div class="eyebrow a a1">Building & iterating — 4 versions in 3 weeks</div>
+    <div class="l-heavy">
+      <div>
+        <div class="display a a2" style="font-size:38px;font-weight:700;margin-bottom:24px;line-height:1.1">Four versions. Each one better because someone told us what wasn't working.</div>
+        <div class="a a3">
+          <div class="iter-item">
+            <span class="iter-badge v-gold">v1 — First build</span>
+            <div>
+              <div style="font-size:14px;color:var(--text);margin-bottom:3px">Core structure shipped</div>
+              <div style="font-size:12px;color:var(--text3)">5 tabs, mood filters, place cards, story viewer, rewards, profile. Working end-to-end. Emoji placeholders throughout.</div>
+            </div>
+          </div>
+          <div class="iter-item">
+            <span class="iter-badge v-fix">Finding after v1</span>
+            <div>
+              <div style="font-size:14px;color:var(--text);margin-bottom:3px">Everything looked the same</div>
+              <div style="font-size:12px;color:var(--text3)">"Emoji placeholders make every section look identical. Places look the same as rewards. No sense of place identity." — User testing round 1</div>
+            </div>
+          </div>
+          <div class="iter-item">
+            <span class="iter-badge v-gold">v2 — Real images</span>
+            <div>
+              <div style="font-size:14px;color:var(--text);margin-bottom:3px">Real atmospheric photography everywhere</div>
+              <div style="font-size:12px;color:var(--text3)">Replaced all emoji placeholders with Unsplash imagery. Every place card, story bubble, place page, explore section now has a distinct visual identity.</div>
+            </div>
+          </div>
+          <div class="iter-item">
+            <span class="iter-badge v-fix">Finding after v2</span>
+            <div>
+              <div style="font-size:14px;color:var(--text);margin-bottom:3px">Rewards system felt wrong</div>
+              <div style="font-size:12px;color:var(--text3)">"Spending points to redeem rewards reduces my rank. That feels punishing. Why would I engage with rewards if it deranks me?" — User testing round 1</div>
+            </div>
+          </div>
+          <div class="iter-item">
+            <span class="iter-badge v-gold">v3 — Milestone unlocks</span>
+            <div>
+              <div style="font-size:14px;color:var(--text);margin-bottom:3px">Points never decrease — milestone system</div>
+              <div style="font-size:12px;color:var(--text3)">Rewards unlock automatically at point thresholds. No spending required. Still felt incomplete — still one currency doing two different jobs.</div>
+            </div>
+          </div>
+          <div class="iter-item" style="border-bottom:none">
+            <span class="iter-badge v-done">v4 — Two currencies</span>
+            <div>
+              <div style="font-size:14px;color:var(--text);margin-bottom:3px">Vibe Points + Vibe Coins — fully separated</div>
+              <div style="font-size:12px;color:var(--text3)">Points = rank (goes up, never spent). Coins = wallet (earned per contribution, spent on rewards). Two separate systems that never interfere. Round 2 testing: all users understood immediately.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="a a3" style="display:flex;flex-direction:column;gap:16px">
+        <div style="display:flex;justify-content:center">
+          <div class="phone">
+            <div class="phone-inner">
+              <img src="https://i.postimg.cc/gjKXG2QN/Screenshot-2026-05-12-222421.png" alt="App — Home screen">
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!-- SLIDE 14: USER TESTING -->
+<!-- ═══════════════════════════════════════════════════════ -->
+<div class="slide" id="s13">
+  <div class="slide-tag">User Testing</div>
+  <div class="slide-inner">
+    <div class="eyebrow a a1">User testing — 2 rounds across 9 people</div>
+    <div class="display a a2" style="font-size:38px;font-weight:700;margin-bottom:28px">The prototype got tested. The feedback changed the product.</div>
+    <div class="two-col">
+      <div>
+        <div style="font-size:13px;font-weight:500;color:var(--text3);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:14px">Round 1 — After v1</div>
+        <div class="check-item a a3">
+          <div class="ci-icon" style="color:var(--green)">✓</div>
+          <div><div class="ci-text">Stories were the first thing every user tapped — understood immediately</div></div>
+        </div>
+        <div class="check-item a a3">
+          <div class="ci-icon" style="color:var(--green)">✓</div>
+          <div><div class="ci-text">Mood filters understood — though language felt slightly vague</div></div>
+        </div>
+        <div class="check-item a a3">
+          <div class="ci-icon" style="color:var(--green)">✓</div>
+          <div><div class="ci-text">Place pages worked — vibe tags and busyness signal understood instantly</div></div>
+        </div>
+        <div class="check-item a a4">
+          <div class="ci-icon" style="color:var(--red)">→</div>
+          <div><div class="ci-text">Emoji placeholders made every section look identical — no place identity</div><div class="ci-sub">Fixed in v2 — real atmospheric photography</div></div>
+        </div>
+        <div class="check-item a a4">
+          <div class="ci-icon" style="color:var(--red)">→</div>
+          <div><div class="ci-text">Rewards deranking felt wrong — spending points reduces rank</div><div class="ci-sub">Fixed in v4 — two-currency system</div></div>
+        </div>
+      </div>
+      <div>
+        <div style="font-size:13px;font-weight:500;color:var(--text3);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:14px">Round 2 — After v4</div>
+        <div class="check-item a a3" style="border-color:rgba(200,169,110,0.15)">
+          <div class="ci-icon" style="color:var(--gold)">✓</div>
+          <div><div class="ci-text" style="color:var(--text)">Every user described what the app does without prompting — it communicates itself</div></div>
+        </div>
+        <div class="check-item a a3" style="border-color:rgba(200,169,110,0.15)">
+          <div class="ci-icon" style="color:var(--gold)">✓</div>
+          <div><div class="ci-text" style="color:var(--text)">Two-currency rewards system felt intuitive immediately — coins vs points understood</div></div>
+        </div>
+        <div class="check-item a a4" style="border-color:rgba(200,169,110,0.15)">
+          <div class="ci-icon" style="color:var(--gold)">✓</div>
+          <div><div class="ci-text" style="color:var(--text)">"Would you open this before going out on Friday?" — unanimous yes</div></div>
+        </div>
+        <div class="check-item a a5" style="border-color:rgba(200,169,110,0.15)">
+          <div class="ci-icon" style="color:var(--gold)">✓</div>
+          <div><div class="ci-text" style="color:var(--text)">UI loved across the board — "this would actually change how I decide where to go"</div></div>
+        </div>
+        <div class="card-gold a a6" style="margin-top:16px;padding:16px 20px">
+          <div style="font-size:13px;color:var(--text);line-height:1.6">Phase 2 features suggested by users: friends &amp; social graph, place rankings, cross-platform sharing to Instagram and TikTok simultaneously.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!-- SLIDE 15: REWARDS DECISION -->
+<!-- ═══════════════════════════════════════════════════════ -->
+<div class="slide" id="s14">
+  <div class="slide-tag">Product Decision · Rewards</div>
+  <div class="slide-inner">
+    <div class="eyebrow a a1">Key product decision — rewards system design</div>
+    <div class="display a a2" style="font-size:38px;font-weight:700;margin-bottom:12px">4 attempts. Each one taught us something different.</div>
+    <div class="body a a3" style="font-size:14px;margin-bottom:20px;max-width:900px">The rewards system was the hardest design problem in Vibe Check. The core tension: <strong style="color:var(--text)">users contribute content to earn rewards, but how you structure rewards changes how people behave — and can either reinforce good habits or incentivize gaming the system.</strong> Here's every attempt we made and why each one failed before we got it right.</div>
+    <div class="two-col">
+      <div style="display:flex;flex-direction:column;gap:10px" class="a a3">
+        <div class="card" style="padding:16px 20px;border-left:3px solid var(--red)">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px"><span style="font-size:14px">✗</span><div style="font-size:14px;font-weight:500;color:var(--text)">Attempt 1: Single points — spend to redeem</div></div>
+          <div style="font-size:12px;color:var(--text3);line-height:1.5">Problem: if your rank is based on total points and you spend points on rewards, redeeming a free cocktail literally lowers your status in the app. Users noticed immediately — "why would I spend if it makes me look less active?" The system punishes engagement. Rejected.</div>
+        </div>
+        <div class="card" style="padding:16px 20px;border-left:3px solid var(--red)">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px"><span style="font-size:14px">✗</span><div style="font-size:14px;font-weight:500;color:var(--text)">Attempt 2: Milestone unlocks with 30-day expiry</div></div>
+          <div style="font-size:12px;color:var(--text3);line-height:1.5">Points go up, rewards unlock at thresholds, but each reward expires in 30 days if unclaimed. Problem: expiry still felt like a penalty. And from the venue side — how do you operationalise a reward that's only valid for 30 days? Adds friction for partners. Rejected.</div>
+        </div>
+        <div class="card" style="padding:16px 20px;border-left:3px solid var(--red)">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px"><span style="font-size:14px">✗</span><div style="font-size:14px;font-weight:500;color:var(--text)">Attempt 3: Streak system (like Duolingo)</div></div>
+          <div style="font-size:12px;color:var(--text3);line-height:1.5">Weekly contribution streak unlocks rewards. Sounds clean — but a week is long enough that anyone can game it. No quality check means users upload old screenshots or random photos just to keep the streak alive. The incentive creates the exact behaviour we don't want. Rejected.</div>
+        </div>
+        <div class="card" style="padding:16px 20px;border-left:3px solid var(--gold);background:var(--gold3)">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px"><span style="font-size:14px;color:var(--gold)">✓</span><div style="font-size:14px;font-weight:500;color:var(--gold)">Attempt 4: Two currencies — final solution</div></div>
+          <div style="font-size:12px;color:var(--text2);line-height:1.6">Two completely separate currencies. Vibe Points = your XP and identity in the app — goes up with every action, defines your rank (Explorer → Local → Insider → Vibe Authority), never spent on anything. Vibe Coins = your spendable wallet — also earned per action, but used exclusively for rewards. Redeeming a free cocktail costs 80 coins. Your point total stays exactly where it was. Your rank never changes. In round 2 testing, every user understood this split immediately — no explanation needed.</div>
+        </div>
+      </div>
+      <div class="a a4">
+        <div style="font-size:12px;color:var(--text3);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:12px">Every action earns both currencies simultaneously</div>
+        <div class="card" style="padding:18px 22px">
+          <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--text3);margin-bottom:10px;font-weight:500">
+            <span>Action</span>
+            <span style="display:flex;gap:32px"><span style="color:var(--gold)">Points</span><span style="color:var(--blue)">Coins 🪙</span></span>
+          </div>
+          <div class="reward-row">
+            <div class="rr-label">📹 Upload a clip</div>
+            <div class="rr-bar-bg"><div class="rr-bar-fill" style="width:100%;background:linear-gradient(90deg,#8B6914,var(--gold))"></div></div>
+            <div class="rr-pts">+50 pts</div>
+            <div class="rr-coins">+10 🪙</div>
+          </div>
+          <div class="reward-row">
+            <div class="rr-label">📸 Upload a photo</div>
+            <div class="rr-bar-bg"><div class="rr-bar-fill" style="width:40%;background:var(--gold)"></div></div>
+            <div class="rr-pts">+20 pts</div>
+            <div class="rr-coins">+4 🪙</div>
+          </div>
+          <div class="reward-row">
+            <div class="rr-label">🏷️ Add vibe tags</div>
+            <div class="rr-bar-bg"><div class="rr-bar-fill" style="width:20%;background:var(--gold)"></div></div>
+            <div class="rr-pts">+10 pts</div>
+            <div class="rr-coins">+2 🪙</div>
+          </div>
+          <div class="reward-row">
+            <div class="rr-label">🆕 First at new place</div>
+            <div class="rr-bar-bg"><div class="rr-bar-fill" style="width:100%;background:linear-gradient(90deg,var(--gold),#E8C98E)"></div></div>
+            <div class="rr-pts">+100 pts</div>
+            <div class="rr-coins">+20 🪙</div>
+          </div>
+          <div class="reward-row">
+            <div class="rr-label">🔥 Clip hits 100+ views</div>
+            <div class="rr-bar-bg"><div class="rr-bar-fill" style="width:50%;background:var(--gold)"></div></div>
+            <div class="rr-pts">+25 pts</div>
+            <div class="rr-coins">+5 🪙</div>
+          </div>
+          <div class="reward-row" style="border-bottom:none">
+            <div class="rr-label">👥 Refer a friend</div>
+            <div class="rr-bar-bg"><div class="rr-bar-fill" style="width:75%;background:var(--gold)"></div></div>
+            <div class="rr-pts">+75 pts</div>
+            <div class="rr-coins">+15 🪙</div>
+          </div>
+        </div>
+        <div class="card-gold" style="margin-top:14px;padding:14px 18px">
+          <div style="font-size:13px;color:var(--text);line-height:1.6"><strong>Key principle:</strong> Points go up forever. Coins are earned and spent. Your rank never moves when you redeem a reward. The two systems are psychologically separate.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!-- SLIDE 16: CONSTRAINTS & TRADEOFFS -->
+<!-- ═══════════════════════════════════════════════════════ -->
+<div class="slide" id="s15">
+  <div class="slide-tag">Constraints & Tradeoffs</div>
+  <div class="slide-inner">
+    <div class="eyebrow a a1">Constraints &amp; tradeoffs — what I had to solve before building</div>
+    <div class="display a a2" style="font-size:38px;font-weight:700;margin-bottom:28px">Three hard problems. Three real solutions.</div>
+    <div class="three-col">
+      <div class="card a a3" style="padding:22px 24px">
+        <div style="font-size:11px;color:var(--red);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:10px">Challenge 1</div>
+        <div style="font-size:16px;font-weight:500;color:var(--text);margin-bottom:8px">Privacy &amp; live content</div>
+        <div style="font-size:13px;color:var(--text3);margin-bottom:16px;line-height:1.5">Original idea: show live clips of places. Problem: businesses won't give camera access. Filming patrons in real time without consent is a legal and ethical issue.</div>
+        <div class="hr-gold"></div>
+        <div style="font-size:11px;color:var(--gold);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:8px">Resolution</div>
+        <div style="font-size:13px;color:var(--text2);line-height:1.5">We only surface content that is already public and legally shareable — no scraping, no taking content without permission. Two clean sources: Google Places API for live crowd data (fully anonymised and within their terms), and user-uploaded content posted directly to Vibe Check. Users can also link their Instagram, Snapchat, or TikTok accounts to cross-post their vibe clips — they consent explicitly at that point. Content we surface always credits the original poster.</div>
+      </div>
+      <div class="card a a4" style="padding:22px 24px">
+        <div style="font-size:11px;color:var(--red);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:10px">Challenge 2</div>
+        <div style="font-size:16px;font-weight:500;color:var(--text);margin-bottom:8px">Third-party data access</div>
+        <div style="font-size:13px;color:var(--text3);margin-bottom:16px;line-height:1.5">TikTok Research API: academic institutions only. Instagram Graph API: largely shut down post-Cambridge Analytica. Can't pull public location-tagged content at scale commercially.</div>
+        <div class="hr-gold"></div>
+        <div style="font-size:11px;color:var(--gold);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:8px">Resolution</div>
+        <div style="font-size:13px;color:var(--text2);line-height:1.5">Phase 1: embed model. Phase 2: creator partnerships (opted-in creators share across platforms). Phase 3: Vibe Check becomes primary destination — Vibe Coins make uploading here more valuable than Instagram.</div>
+      </div>
+      <div class="card a a5" style="padding:22px 24px">
+        <div style="font-size:11px;color:var(--red);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:10px">Challenge 3 — Unsolved</div>
+        <div style="font-size:16px;font-weight:500;color:var(--text);margin-bottom:8px">Content quality control</div>
+        <div style="font-size:13px;color:var(--text3);margin-bottom:16px;line-height:1.5">Any incentive system without quality control becomes a spam farm. Old photos, internet images, irrelevant content — all earn coins. This is the biggest unsolved problem in Vibe Check.</div>
+        <div class="hr-gold"></div>
+        <div style="font-size:11px;color:var(--gold);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:8px">Open questions for Phase 2</div>
+        <div style="font-size:13px;color:var(--text2);line-height:1.5">Community flagging · AI moderation for stock photos · Minimum engagement thresholds before coins are awarded · Trusted contributor status for verified users</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!-- SLIDE 17: MONETISATION -->
+<!-- ═══════════════════════════════════════════════════════ -->
+<div class="slide" id="s16">
+  <div class="slide-tag">Monetisation</div>
+  <div class="slide-inner">
+    <div class="eyebrow a a1">Monetisation — three revenue streams</div>
+    <div class="display a a2" style="font-size:38px;font-weight:700;margin-bottom:8px">Revenue that protects authenticity, not compromises it.</div>
+    <div class="body a a3" style="font-size:14px;margin-bottom:24px">Every revenue stream is designed around one principle: the moment venues can control their vibe tags or the feed gets polluted with ads, Vibe Check becomes Yelp — and loses everything that makes it different.</div>
+    <div class="three-col a a4">
+      <div class="card" style="padding:22px 24px">
+        <div style="font-size:32px;margin-bottom:12px">🤝</div>
+        <div style="font-size:11px;color:var(--gold);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:6px">Stream 1 · Launch revenue</div>
+        <div style="font-size:17px;font-weight:500;color:var(--text);margin-bottom:10px">Venue reward partnerships</div>
+        <div style="font-size:13px;color:var(--text2);line-height:1.6;margin-bottom:12px">Restaurants and bars pay to be Vibe Coin redemption partners. Commission per redemption or flat monthly fee. Win-win-win: venues get authentic UGC marketing, users get real discounts, Vibe Check earns revenue.</div>
+        <div style="display:flex;flex-direction:column;gap:4px">
+          <div style="font-size:12px;color:var(--text3)">→ Similar model to OpenTable (charges per seated diner)</div>
+          <div style="font-size:12px;color:var(--text3)">→ Low friction to get first 20–30 partner venues</div>
+        </div>
+      </div>
+      <div class="card" style="padding:22px 24px">
+        <div style="font-size:32px;margin-bottom:12px">🎵</div>
+        <div style="font-size:11px;color:var(--gold);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:6px">Stream 2 · Scales with venues</div>
+        <div style="font-size:17px;font-weight:500;color:var(--text);margin-bottom:10px">Event promotion</div>
+        <div style="font-size:13px;color:var(--text2);line-height:1.6;margin-bottom:12px">Venues pay to promote events — a jazz night, DJ set, themed dinner — as a native story or featured card. Must be real visitor-shot content, labelled transparently as promoted. Priced per event or monthly package.</div>
+        <div style="display:flex;flex-direction:column;gap:4px">
+          <div style="font-size:12px;color:var(--text3)">→ Hyper-relevant and hyper-timely</div>
+          <div style="font-size:12px;color:var(--text3)">→ Authenticity requirement protects the feed</div>
+        </div>
+      </div>
+      <div class="card" style="padding:22px 24px">
+        <div style="font-size:32px;margin-bottom:12px">📊</div>
+        <div style="font-size:11px;color:var(--gold);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:6px">Stream 3 · High-margin SaaS</div>
+        <div style="font-size:17px;font-weight:500;color:var(--text);margin-bottom:10px">Venue analytics dashboard</div>
+        <div style="font-size:13px;color:var(--text2);line-height:1.6;margin-bottom:12px">Monthly SaaS subscription for venue owners. Shows: what tags visitors leave, visit times by day/hour, mood filter performance, what brings people in vs. what makes them leave. Competitor benchmarking.</div>
+        <div style="display:flex;flex-direction:column;gap:4px">
+          <div style="font-size:12px;color:var(--text3)">→ Recurring MRR, high retention</div>
+          <div style="font-size:12px;color:var(--text3)">→ Venues become invested in platform success</div>
+        </div>
+      </div>
+    </div>
+    <div class="card a a5" style="margin-top:16px;padding:14px 22px;border-color:rgba(226,75,74,0.2);display:flex;align-items:center;gap:16px">
+      <div style="font-size:20px;flex-shrink:0">🚫</div>
+      <div style="font-size:14px;color:var(--text);line-height:1.6"><strong>What we explicitly won't do:</strong> Sell user data. Algorithmic ads that break the feed. Let venues edit or remove negative vibe tags. <span style="color:var(--gold)">Authenticity is the product. Every revenue decision has to protect it, not compromise it.</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!-- SLIDE 18: METRICS -->
+<!-- ═══════════════════════════════════════════════════════ -->
+<div class="slide" id="s17">
+  <div class="slide-tag">Metrics</div>
+  <div class="slide-inner">
+    <div class="eyebrow a a1">Success metrics</div>
+    <div class="display a a2" style="font-size:38px;font-weight:700;margin-bottom:12px">What we track to know if this is actually working.</div>
+    <div class="card-gold a a3" style="padding:18px 24px;margin-bottom:20px">
+      <div style="font-size:11px;color:var(--gold);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:6px">North Star Metric</div>
+      <div style="font-size:18px;color:var(--text);font-weight:500;line-height:1.5">Confident decisions per week — a user who viewed Vibe Check before going somewhere and reported the vibe matched what they saw. This is the product working.</div>
+    </div>
+    <div class="two-col a a4">
+      <div>
+        <div style="font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:12px">Product metrics</div>
+        <div class="metric" style="margin-bottom:10px">
+          <div class="metric-type">Core</div>
+          <div class="metric-name">Decision rate</div>
+          <div class="metric-desc">% of users who tap "I'm going tonight" after viewing a place page. Measures whether the product actually creates decisions, not just browsing.</div>
+        </div>
+        <div class="metric" style="margin-bottom:10px">
+          <div class="metric-type">Content health</div>
+          <div class="metric-name">Clip recency per place</div>
+          <div class="metric-desc">Average age of the most recent clip per place. Lower = better. If this climbs above 48hrs, the real-time value prop starts to erode.</div>
+        </div>
+        <div class="metric">
+          <div class="metric-type">Retention</div>
+          <div class="metric-name">7-day return rate</div>
+          <div class="metric-desc">% who open Vibe Check again within 7 days. The app only works if people reach for it habitually before going out, not just once.</div>
+        </div>
+      </div>
+      <div>
+        <div style="font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:12px">Community & quality metrics</div>
+        <div class="metric" style="margin-bottom:10px">
+          <div class="metric-type">Community health</div>
+          <div class="metric-name">Monthly upload rate</div>
+          <div class="metric-desc">% of users who contribute at least one clip or photo per month. Measures whether the rewards system is successfully turning consumers into contributors.</div>
+        </div>
+        <div class="metric" style="margin-bottom:10px">
+          <div class="metric-type">Trust signal</div>
+          <div class="metric-name">Vibe accuracy</div>
+          <div class="metric-desc">Post-visit survey: "Did the vibe match what Vibe Check showed?" % yes. This is the most important quality metric — if this drops, everything else follows.</div>
+        </div>
+        <div class="metric">
+          <div class="metric-type">Revenue</div>
+          <div class="metric-name">Coin redemption rate</div>
+          <div class="metric-desc">% of users who redeem at least one Vibe Coin reward per month. Measures whether venue partnerships are delivering real value to users.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!-- SLIDE 19: GROWTH FLYWHEEL -->
+<!-- ═══════════════════════════════════════════════════════ -->
+<div class="slide" id="s18">
+  <div class="slide-tag">Growth</div>
+  <div class="slide-inner">
+    <div class="eyebrow a a1">The product flywheel</div>
+    <div class="display a a2" style="font-size:44px;font-weight:700;margin-bottom:28px;line-height:1.1">When the loop works, growth takes care of itself.</div>
+    <div class="two-col a a3">
+      <div>
+        <div class="flow" style="flex-direction:column;align-items:flex-start;gap:0">
+          <div style="display:flex;align-items:center;gap:12px">
+            <div class="flow-step highlight" style="min-width:200px">User visits a place</div>
+          </div>
+          <div style="padding-left:20px;font-size:20px;color:var(--gold);line-height:1.2;padding:4px 0 4px 20px">↓</div>
+          <div class="flow-step" style="min-width:200px">Uploads clip → earns Vibe Coins</div>
+          <div style="padding-left:20px;font-size:20px;color:var(--gold);line-height:1.2;padding:4px 0 4px 20px">↓</div>
+          <div class="flow-step" style="min-width:200px">Clip appears in Home stories feed</div>
+          <div style="padding-left:20px;font-size:20px;color:var(--gold);line-height:1.2;padding:4px 0 4px 20px">↓</div>
+          <div class="flow-step" style="min-width:200px">Others see it, make better decisions</div>
+          <div style="padding-left:20px;font-size:20px;color:var(--gold);line-height:1.2;padding:4px 0 4px 20px">↓</div>
+          <div class="flow-step" style="min-width:200px">They go out, upload their own clip</div>
+          <div style="padding-left:20px;font-size:20px;color:var(--gold);line-height:1.2;padding:4px 0 4px 20px">↓</div>
+          <div class="flow-step highlight" style="min-width:200px">More content → better product → more users</div>
+        </div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:14px">
+        <div class="card" style="padding:18px 22px">
+          <div style="font-size:13px;color:var(--text3);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:10px">Why this flywheel is defensible</div>
+          <div class="check-item">
+            <div class="ci-icon" style="color:var(--gold)">→</div>
+            <div class="ci-text">Content compounds: each new upload makes every other user's experience better. Unlike reviews which just accumulate, vibe content is time-sensitive — always fresh, always relevant.</div>
+          </div>
+          <div class="check-item">
+            <div class="ci-icon" style="color:var(--gold)">→</div>
+            <div class="ci-text">Network effects by city: the product gets dramatically better as more people in your city use it. First mover advantage in each metro is significant.</div>
+          </div>
+          <div class="check-item" style="border-bottom:none">
+            <div class="ci-icon" style="color:var(--gold)">→</div>
+            <div class="ci-text">Venue relationships compound: as more venues join the rewards program, the coin shop becomes more valuable, which drives more uploads, which attracts more venues.</div>
+          </div>
+        </div>
+        <div class="card-gold" style="padding:16px 20px">
+          <div style="font-size:14px;color:var(--text);line-height:1.7">5M users · 5 outings/month = <strong>25M vibe decisions/month</strong><br>If 30% share their experience = <strong>7.5M organic posts/month</strong><br>driving next wave of user acquisition at $0 CAC.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!-- SLIDE 20: PHASE 2 -->
+<!-- ═══════════════════════════════════════════════════════ -->
+<div class="slide" id="s19">
+  <div class="slide-tag">Phase 2</div>
+  <div class="slide-inner">
+    <div class="eyebrow a a1">Phase 2 — from discovery tool to social layer</div>
+    <div class="l-heavy">
+      <div>
+        <div class="display a a2" style="font-size:40px;font-weight:700;margin-bottom:18px;line-height:1.1">Phase 2 turns Vibe Check into where going out lives.</div>
+        <div class="body a a3" style="font-size:15px;margin-bottom:24px">Phase 1 makes Vibe Check the best way to discover a place. Phase 2 makes it the best way to share your going-out life. The social graph, the rankings, the cross-platform presence — that's what makes users stay, not just visit.</div>
+        <div class="a a4">
+          <div class="p2-item">
+            <div class="p2-icon">👥</div>
+            <div><div class="p2-title">Friends &amp; social graph</div><div class="p2-desc">Follow the people whose taste you trust. See where they've been recently, what they've saved for later, what they uploaded this week. When your friend who always finds great spots marks somewhere as a 9/10 — that signal is worth more than any algorithm. Research confirmed this: friend content was the single highest-trust input in every interview. Phase 2 systematizes it at scale.</div></div>
+          </div>
+          <div class="p2-item">
+            <div class="p2-icon">🏆</div>
+            <div><div class="p2-title">Personal place rankings</div><div class="p2-desc">Every place you visit, you can rate and rank against others. Your ranked list lives on your profile — filterable by mood, neighborhood, or type. Friends can see your rankings, discover where you've been, and use your taste as a discovery tool. The more you go out, the more useful your profile becomes to the people who trust your judgment.</div></div>
+          </div>
+          <div class="p2-item">
+            <div class="p2-icon">🔗</div>
+            <div><div class="p2-title">Cross-platform sharing</div><div class="p2-desc">Link your Instagram, Snapchat, or TikTok to Vibe Check. When you upload a vibe clip, it goes to Vibe Check first — and optionally cross-posts to your other platforms simultaneously. This makes Vibe Check the origin point, not an afterthought. Your audience on other platforms sees your content. Your Vibe Check community sees the structured, tagged, placed version. One upload does both jobs.</div></div>
+          </div>
+          <div class="p2-item">
+            <div class="p2-icon">🛡️</div>
+            <div><div class="p2-title">Content quality control</div><div class="p2-desc">The biggest unsolved problem. Community flagging, AI moderation for stock photos, minimum engagement thresholds before coins are awarded, trusted contributor verification.</div></div>
+          </div>
+          <div class="p2-item" style="border-bottom:none">
+            <div class="p2-icon">📊</div>
+            <div><div class="p2-title">Venue analytics dashboard</div><div class="p2-desc">A full SaaS product for venue owners — showing what vibe tags visitors leave most, which nights drive the most uploads, what mood filters bring people in, how their energy compares to competitors in the same neighborhood. Venues pay a monthly subscription for access. They get genuine insight into how people actually experience their space — not just star ratings. This becomes a recurring, high-margin revenue stream that also incentivizes venues to care about Vibe Check quality.</div></div>
+          </div>
+        </div>
+      </div>
+      <div class="a a3" style="display:flex;flex-direction:column;gap:14px">
+        <div style="display:flex;justify-content:center">
+          <div class="phone">
+            <div class="phone-inner">
+              <img src="https://i.postimg.cc/ydmWTN1Y/2.png" alt="Social features">
+            </div>
+          </div>
+        </div>
+        <div class="card-gold" style="padding:16px 18px">
+          <div style="font-size:13px;color:var(--text);line-height:1.6">The goal: <strong>Vibe Check becomes the app you open before every night out</strong> — not just when you're lost for ideas, but habitually, because your friends are on it and your rewards are on it and your history is on it.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!-- SLIDE 21: WHAT I LEARNED -->
+<!-- ═══════════════════════════════════════════════════════ -->
+<div class="slide" id="s20">
+  <div class="glow glow-g" style="width:500px;height:500px;bottom:-100px;right:-100px"></div>
+  <div class="slide-tag">Reflections</div>
+  <div class="slide-inner" style="position:relative;z-index:1">
+    <div class="eyebrow a a1">What this project taught me</div>
+    <div class="l-heavy" style="align-items:start">
+      <div>
+        <div class="display a a2" style="font-size:42px;font-weight:700;margin-bottom:32px;line-height:1.1">Three things I didn't fully understand until I built this.</div>
+        <div style="display:flex;flex-direction:column;gap:24px">
+          <div style="display:flex;gap:20px;align-items:flex-start" class="a a3">
+            <div class="serif" style="font-size:56px;font-weight:900;color:var(--gold);line-height:1;flex-shrink:0;width:44px">1</div>
+            <div>
+              <div style="font-size:18px;font-weight:500;color:var(--text);margin-bottom:8px">Research changes your product — if you let it.</div>
+              <div class="body" style="font-size:14px">I started with a nightlife app for 25-year-olds on Friday nights. Seven honest conversations later I had a reality-check layer for any place, with personas (remote workers, parents, new-in-towners) I never would have anticipated. The insight that expanded the product came from listening, not from planning.</div>
+            </div>
+          </div>
+          <div style="display:flex;gap:20px;align-items:flex-start" class="a a4">
+            <div class="serif" style="font-size:56px;font-weight:900;color:var(--gold);line-height:1;flex-shrink:0;width:44px">2</div>
+            <div>
+              <div style="font-size:18px;font-weight:500;color:var(--text);margin-bottom:8px">Discomfort is a design signal worth following.</div>
+              <div class="body" style="font-size:14px">Every important decision in this case study started with a feeling that something was wrong. The rewards deranking. The privacy concern with live feeds. The quality control gap with streaks. Following that discomfort — rather than rationalizing past it — is what made the product better each time.</div>
+            </div>
+          </div>
+          <div style="display:flex;gap:20px;align-items:flex-start" class="a a5">
+            <div class="serif" style="font-size:56px;font-weight:900;color:var(--gold);line-height:1;flex-shrink:0;width:44px">3</div>
+            <div>
+              <div style="font-size:18px;font-weight:500;color:var(--text);margin-bottom:8px">Imperfect and in someone's hands beats perfect in your head.</div>
+              <div class="body" style="font-size:14px">The moment I had a working prototype to put in front of a real person, I learned more in one 20-minute conversation than in a week of planning. The emoji placeholder problem, the deranking problem — none of that was visible until someone actually used it. Build sooner than feels comfortable.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="a a3" style="display:flex;flex-direction:column;gap:12px">
+        <div class="card" style="padding:18px 22px">
+          <div style="font-size:12px;color:var(--text3);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:10px">By the numbers</div>
+          <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:0.5px solid var(--border)"><span style="font-size:13px;color:var(--text2)">User interviews</span><span style="font-family:'Fraunces',serif;font-size:22px;font-weight:700;color:var(--gold)">35</span></div>
+          <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:0.5px solid var(--border)"><span style="font-size:13px;color:var(--text2)">Prototype versions</span><span style="font-family:'Fraunces',serif;font-size:22px;font-weight:700;color:var(--gold)">4</span></div>
+          <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:0.5px solid var(--border)"><span style="font-size:13px;color:var(--text2)">Test rounds</span><span style="font-family:'Fraunces',serif;font-size:22px;font-weight:700;color:var(--gold)">2</span></div>
+          <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:0.5px solid var(--border)"><span style="font-size:13px;color:var(--text2)">Reward system attempts</span><span style="font-family:'Fraunces',serif;font-size:22px;font-weight:700;color:var(--gold)">4</span></div>
+          <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:0.5px solid var(--border)"><span style="font-size:13px;color:var(--text2)">Personas built</span><span style="font-family:'Fraunces',serif;font-size:22px;font-weight:700;color:var(--gold)">4</span></div>
+          <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0"><span style="font-size:13px;color:var(--text2)">Said they'd use it</span><span style="font-family:'Fraunces',serif;font-size:22px;font-weight:700;color:var(--gold)">35/35</span></div>
+        </div>
+        <div class="q-block" style="margin-top:4px">
+          <div class="q-text" style="font-size:16px">"Would you open this before going out Friday night?"</div>
+          <div class="q-attr">Unanimous yes — Round 2 testing</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!-- SLIDE 22: CLOSING -->
+<!-- ═══════════════════════════════════════════════════════ -->
+<div class="slide" id="s21">
+  <div class="glow glow-g" style="width:800px;height:800px;top:50%;left:50%;transform:translate(-50%,-50%)"></div>
+  <div class="slide-tag">Thank you</div>
+  <div class="slide-inner" style="position:relative;z-index:1;justify-content:space-between;padding:20px 0">
+    <div>
+      <div class="eyebrow a a1">Vibe Check · Product Case Study · 2025</div>
+      <div class="display a a2" style="font-size:80px;font-weight:900;line-height:0.95;margin-bottom:24px">Sanyukta<br><span style="color:var(--gold);font-style:italic">Jha.</span></div>
+      <div style="display:flex;gap:12px;flex-wrap:wrap" class="a a5">
+        <span style="background:var(--gold2);border:0.5px solid rgba(200,169,110,0.3);border-radius:100px;padding:8px 20px;font-size:14px;color:var(--gold)">sanyukta.jha105@gmail.com</span>
+      </div>
+    </div>
+    <div class="a a4" style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px">
+      <div style="text-align:center"><div class="stat-med" style="font-size:36px">35</div><div class="stat-label">Interviews</div></div>
+      <div style="text-align:center"><div class="stat-med" style="font-size:36px">163M</div><div class="stat-label">TAM</div></div>
+      <div style="text-align:center"><div class="stat-med" style="font-size:36px">4</div><div class="stat-label">Versions</div></div>
+      <div style="text-align:center"><div class="stat-med" style="font-size:36px">35/35</div><div class="stat-label">Would use it</div></div>
+    </div>
+  </div>
+</div>
+
+</div><!-- /deck -->
+
+<!-- NAV -->
+<div class="nav">
+  <button class="nav-btn" onclick="prev()">←</button>
+  <div class="dots" id="dots"></div>
+  <div class="counter" id="ctr">1 / 22</div>
+  <button class="nav-btn" onclick="next()">→</button>
+</div>
+
+<script>
+const slides=document.querySelectorAll('.slide');
+const N=slides.length;
+let cur=0;
+
+function buildDots(){
+  const d=document.getElementById('dots');
+  for(let i=0;i<N;i++){
+    const el=document.createElement('div');
+    el.className='dot'+(i===0?' active':'');
+    el.onclick=()=>go(i);
+    d.appendChild(el);
+  }
+}
+
+function refresh(){
+  document.getElementById('prog').style.width=((cur+1)/N*100)+'%';
+  document.getElementById('ctr').textContent=(cur+1)+' / '+N;
+  document.querySelectorAll('.dot').forEach((d,i)=>d.classList.toggle('active',i===cur));
+}
+
+function go(idx){
+  if(idx<0||idx>=N||idx===cur)return;
+  slides[cur].classList.remove('active');
+  slides[cur].classList.add('exit-up');
+  const prev_cur=cur;
+  cur=idx;
+  setTimeout(()=>slides[prev_cur].classList.remove('exit-up'),600);
+  slides[cur].classList.add('active');
+  refresh();
+}
+
+function next(){go(Math.min(cur+1,N-1));}
+function prev(){go(Math.max(cur-1,0));}
+
+document.addEventListener('keydown',e=>{
+  if(['ArrowRight','ArrowDown',' '].includes(e.key)){e.preventDefault();next();}
+  if(['ArrowLeft','ArrowUp'].includes(e.key)){e.preventDefault();prev();}
+});
+
+let tx=0;
+document.addEventListener('touchstart',e=>tx=e.touches[0].clientX,{passive:true});
+document.addEventListener('touchend',e=>{
+  const d=tx-e.changedTouches[0].clientX;
+  if(Math.abs(d)>60){d>0?next():prev();}
+},{passive:true});
+
+buildDots();refresh();
+</script>
+</body>
+</html>

@@ -1,0 +1,934 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vibe Check — Know Before You Go</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --gold:#C8A96E;--gold-light:#d4b87e;--dark:#0A0A0A;--dark2:#111111;--dark3:#1A1A1A;--dark4:#222222;
+  --text:#F5F0E8;--text2:rgba(245,240,232,0.6);--text3:rgba(245,240,232,0.35);
+  --border:rgba(245,240,232,0.08);--border2:rgba(245,240,232,0.15);
+  --red:#E24B4A;--green:#639922;--blue:#378ADD;
+}
+body{font-family:'DM Sans',sans-serif;background:var(--dark);color:var(--text);max-width:430px;margin:0 auto;min-height:100vh;overflow-x:hidden}
+.screen{display:none;min-height:100vh;padding-bottom:90px}
+.screen.active{display:block;animation:fadeIn 0.25s ease}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+
+/* NAV */
+.bottom-nav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:430px;background:rgba(10,10,10,0.97);backdrop-filter:blur(20px);border-top:0.5px solid var(--border2);display:flex;align-items:center;z-index:100;padding:8px 0 16px}
+.nav-tab{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;padding:4px;transition:all 0.2s}
+.nav-tab .ni{font-size:20px;line-height:1}
+.nav-tab .nl{font-size:10px;color:var(--text3);font-weight:500}
+.nav-tab.active .nl{color:var(--gold)}
+.add-tab .add-wrap{width:48px;height:48px;background:var(--gold);border-radius:50%;display:flex;align-items:center;justify-content:center;margin-top:-20px;box-shadow:0 4px 24px rgba(200,169,110,0.5)}
+.add-tab .add-wrap .ni{font-size:24px;color:var(--dark)}
+
+/* HEADERS */
+.app-header{padding:48px 20px 16px;display:flex;align-items:flex-end;justify-content:space-between}
+.app-logo{font-family:'Playfair Display',serif;font-size:28px;font-weight:700}
+.app-logo span{color:var(--gold);font-style:italic}
+.header-eyebrow{font-size:11px;color:var(--text3);letter-spacing:0.12em;text-transform:uppercase;margin-bottom:4px}
+.sec-label{font-size:11px;letter-spacing:0.14em;color:var(--text3);text-transform:uppercase;font-weight:500;padding:0 20px;margin-bottom:12px}
+
+/* STORIES */
+.stories-wrap{padding:0 20px 20px;overflow-x:auto;scrollbar-width:none}
+.stories-wrap::-webkit-scrollbar{display:none}
+.stories-row{display:flex;gap:14px;width:max-content}
+.story-item{display:flex;flex-direction:column;align-items:center;gap:6px;cursor:pointer}
+.story-ring{width:64px;height:64px;border-radius:50%;padding:2.5px;background:linear-gradient(135deg,var(--gold),#8B6914)}
+.story-ring.seen{background:rgba(245,240,232,0.15)}
+.story-inner{width:100%;height:100%;border-radius:50%;overflow:hidden;border:2px solid var(--dark)}
+.story-inner img{width:100%;height:100%;object-fit:cover}
+.story-name{font-size:10px;color:var(--text3);text-align:center;max-width:68px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+/* MOOD */
+.mood-bar{padding:0 20px 20px;overflow-x:auto;scrollbar-width:none}
+.mood-bar::-webkit-scrollbar{display:none}
+.mood-pills{display:flex;gap:8px;width:max-content}
+.mood-pill{padding:8px 16px;border-radius:100px;border:0.5px solid var(--border2);background:transparent;color:var(--text2);font-size:13px;font-family:'DM Sans',sans-serif;cursor:pointer;white-space:nowrap;transition:all 0.2s}
+.mood-pill:hover{border-color:var(--gold);color:var(--gold)}
+.mood-pill.active{background:var(--gold);border-color:var(--gold);color:var(--dark);font-weight:500}
+
+/* FEATURED */
+.featured-wrap{padding:0 20px;margin-bottom:28px}
+.featured-card{border-radius:20px;overflow:hidden;cursor:pointer;position:relative;height:280px}
+.featured-card img{width:100%;height:100%;object-fit:cover;display:block}
+.featured-overlay{position:absolute;bottom:0;left:0;right:0;background:linear-gradient(transparent,rgba(0,0,0,0.92));padding:24px 20px 20px}
+.live-badge{position:absolute;top:16px;right:16px;background:var(--red);color:#fff;font-size:10px;font-weight:500;padding:5px 12px;border-radius:100px;letter-spacing:0.08em;text-transform:uppercase}
+.featured-name{font-family:'Playfair Display',serif;font-size:24px;font-weight:700;margin-bottom:4px}
+.featured-desc{font-size:12px;color:rgba(245,240,232,0.7);margin-bottom:10px;line-height:1.5}
+.vibe-tags{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:10px}
+.vibe-tag{font-size:11px;padding:4px 10px;border-radius:100px;border:0.5px solid rgba(245,240,232,0.25);color:rgba(245,240,232,0.75);backdrop-filter:blur(4px)}
+.vibe-tag.hot{border-color:rgba(200,169,110,0.6);color:var(--gold)}
+.busy-row{display:flex;align-items:center;gap:8px}
+.busy-label{font-size:11px;color:rgba(245,240,232,0.5)}
+.busy-bars{display:flex;gap:3px}
+.b-bar{width:7px;height:14px;border-radius:2px;background:rgba(245,240,232,0.15)}
+.b-bar.on{background:var(--gold)}
+.busy-text{font-size:11px;font-weight:500}
+.bt-packed{color:var(--red)}.bt-buzzing{color:var(--gold)}.bt-moderate{color:var(--green)}.bt-quiet{color:var(--blue)}.bt-dead{color:var(--text3)}
+
+/* PLACE GRID */
+.places-wrap{padding:0 20px}
+.places-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:8px}
+.place-card{background:var(--dark3);border:0.5px solid var(--border);border-radius:16px;overflow:hidden;cursor:pointer;transition:all 0.2s}
+.place-card:hover{border-color:rgba(200,169,110,0.3);transform:translateY(-3px)}
+.place-card.hidden{display:none}
+.place-img{height:120px;overflow:hidden;position:relative}
+.place-img img{width:100%;height:100%;object-fit:cover;display:block;transition:transform 0.3s}
+.place-card:hover .place-img img{transform:scale(1.05)}
+.place-busy-overlay{position:absolute;bottom:6px;left:8px;font-size:10px;font-weight:500;padding:3px 8px;border-radius:100px;backdrop-filter:blur(8px);background:rgba(0,0,0,0.5)}
+.place-body{padding:12px}
+.place-name{font-family:'Playfair Display',serif;font-size:14px;font-weight:700;margin-bottom:2px;line-height:1.2}
+.place-type{font-size:10px;color:var(--text3);margin-bottom:8px}
+.place-tags{display:flex;flex-wrap:wrap;gap:3px;margin-bottom:8px}
+.place-tag{font-size:9px;padding:2px 7px;border-radius:100px;border:0.5px solid var(--border2);color:var(--text2)}
+.view-btn{width:100%;padding:7px;border-radius:100px;border:0.5px solid rgba(200,169,110,0.3);background:transparent;color:var(--gold);font-family:'DM Sans',sans-serif;font-size:11px;cursor:pointer;transition:all 0.15s;text-align:center}
+.view-btn:hover{background:var(--gold);color:var(--dark)}
+
+/* PLACE PAGE */
+.place-page-img{height:260px;overflow:hidden;position:relative}
+.place-page-img img{width:100%;height:100%;object-fit:cover}
+.place-page-img-overlay{position:absolute;bottom:0;left:0;right:0;height:120px;background:linear-gradient(transparent,var(--dark))}
+.back-btn{position:absolute;top:16px;left:16px;width:36px;height:36px;border-radius:50%;background:rgba(0,0,0,0.5);backdrop-filter:blur(8px);border:0.5px solid var(--border2);color:var(--text);font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:10}
+.place-page-body{padding:20px}
+.place-page-name{font-family:'Playfair Display',serif;font-size:26px;font-weight:700;margin-bottom:4px}
+.place-page-type{font-size:12px;color:var(--text3);margin-bottom:16px}
+.pp-section{margin-bottom:20px}
+.pp-sec-label{font-size:10px;letter-spacing:0.12em;color:var(--text3);text-transform:uppercase;font-weight:500;margin-bottom:10px}
+.now-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+.now-card{background:var(--dark3);border-radius:12px;padding:12px;text-align:center;border:0.5px solid var(--border)}
+.now-val{font-size:13px;font-weight:500;color:var(--gold)}
+.now-lbl{font-size:10px;color:var(--text3);margin-top:3px}
+.best-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.bf-card{background:var(--dark3);border-radius:12px;padding:12px;border:0.5px solid var(--border)}
+.bf-label{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:6px}
+.bf-items{font-size:12px;color:var(--text2);line-height:1.7}
+.quick-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.qf-item{display:flex;align-items:center;gap:8px;background:var(--dark3);border-radius:10px;padding:10px 12px;border:0.5px solid var(--border)}
+.qf-icon{font-size:14px}.qf-text{font-size:12px;color:var(--text2)}
+.clip-box{background:var(--dark3);border:0.5px solid var(--border);border-radius:12px;padding:14px;display:flex;align-items:center;gap:10px;cursor:pointer;transition:border-color 0.15s}
+.clip-box:hover{border-color:rgba(200,169,110,0.3)}
+.clip-dot{width:8px;height:8px;border-radius:50%;background:var(--red);flex-shrink:0;animation:pulse 1.5s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.4}}
+.clip-text{font-size:12px;color:var(--text2);line-height:1.5}
+.decision-row{display:flex;gap:10px;margin-top:20px}
+.dec-btn{flex:1;padding:14px;border-radius:100px;font-size:13px;font-family:'DM Sans',sans-serif;font-weight:500;cursor:pointer;transition:all 0.15s;border:none}
+.btn-yes{background:var(--gold);color:var(--dark)}.btn-yes:hover{background:var(--gold-light)}
+.btn-no{background:rgba(245,240,232,0.06);color:var(--text2);border:0.5px solid var(--border2)!important}.btn-no:hover{background:rgba(245,240,232,0.1)}
+.add-vibe-btn{width:100%;margin-top:10px;padding:13px;border-radius:100px;border:0.5px solid rgba(200,169,110,0.3);background:transparent;color:var(--gold);font-family:'DM Sans',sans-serif;font-size:13px;cursor:pointer;transition:all 0.15s}
+.add-vibe-btn:hover{background:rgba(200,169,110,0.1)}
+
+/* PLACE STORIES STRIP */
+.place-stories{overflow-x:auto;padding:0 20px 16px;scrollbar-width:none}
+.place-stories::-webkit-scrollbar{display:none}
+.place-stories-row{display:flex;gap:10px;width:max-content}
+.ps-item{width:90px;cursor:pointer}
+.ps-thumb{width:90px;height:120px;border-radius:12px;overflow:hidden;position:relative;border:0.5px solid var(--border)}
+.ps-thumb img{width:100%;height:100%;object-fit:cover}
+.ps-time{position:absolute;bottom:0;left:0;right:0;text-align:center;font-size:9px;color:rgba(245,240,232,0.8);background:linear-gradient(transparent,rgba(0,0,0,0.7));padding:12px 4px 4px}
+.ps-tag{font-size:10px;color:var(--text3);margin-top:4px;text-align:center;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+/* STORY VIEWER */
+.story-viewer{position:fixed;top:0;left:50%;transform:translateX(-50%);width:100%;max-width:430px;height:100vh;z-index:200;display:none;flex-direction:column;background:#000}
+.story-viewer.open{display:flex}
+.story-bg{position:absolute;top:0;left:0;right:0;bottom:0;overflow:hidden}
+.story-bg img{width:100%;height:100%;object-fit:cover;opacity:0.7}
+.story-ui{position:relative;z-index:2;display:flex;flex-direction:column;height:100%}
+.story-progress{display:flex;gap:4px;padding:48px 16px 12px}
+.sp-bar{flex:1;height:2.5px;background:rgba(255,255,255,0.3);border-radius:2px;overflow:hidden}
+.sp-fill{height:100%;background:#fff;width:0%}
+.sp-fill.done{width:100%}
+.sp-fill.active{width:100%;transition:width 5s linear}
+.story-header{display:flex;align-items:center;gap:10px;padding:0 16px 16px}
+.sh-place{font-size:15px;font-weight:500;color:#fff}
+.sh-time{font-size:12px;color:rgba(255,255,255,0.6);margin-left:auto}
+.sh-close{background:rgba(0,0,0,0.4);border:none;color:#fff;font-size:20px;cursor:pointer;width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center}
+.story-center{flex:1;display:flex;align-items:flex-end;padding:0 16px 20px}
+.story-tags-overlay{display:flex;gap:6px;flex-wrap:wrap}
+.story-tag{font-size:12px;padding:6px 12px;border-radius:100px;background:rgba(0,0,0,0.5);backdrop-filter:blur(8px);color:#fff;border:0.5px solid rgba(255,255,255,0.2)}
+.story-reactions{display:flex;gap:8px;padding:0 16px 12px}
+.sr-btn{flex:1;padding:10px;border-radius:100px;border:0.5px solid rgba(255,255,255,0.2);background:rgba(0,0,0,0.4);backdrop-filter:blur(8px);color:rgba(255,255,255,0.85);font-size:11px;font-family:'DM Sans',sans-serif;cursor:pointer;transition:all 0.15s;text-align:center}
+.sr-btn:hover,.sr-btn.tapped{background:var(--gold);color:var(--dark);border-color:var(--gold)}
+.story-swipe-up{padding:0 16px 20px;text-align:center;font-size:12px;color:rgba(255,255,255,0.5);cursor:pointer}
+.story-swipe-up:hover{color:var(--gold)}
+
+/* EXPLORE */
+.explore-search{padding:0 20px 20px}
+.search-box{display:flex;align-items:center;gap:10px;background:var(--dark3);border:0.5px solid var(--border2);border-radius:100px;padding:12px 18px}
+.search-box input{background:transparent;border:none;outline:none;color:var(--text);font-size:14px;font-family:'DM Sans',sans-serif;flex:1}
+.search-box input::placeholder{color:var(--text3)}
+.explore-section{margin-bottom:28px}
+.explore-sec-header{display:flex;align-items:center;justify-content:space-between;padding:0 20px;margin-bottom:14px}
+.es-title{font-size:15px;font-weight:500}
+.es-all{font-size:12px;color:var(--gold);cursor:pointer}
+.explore-scroll{overflow-x:auto;padding:0 20px;scrollbar-width:none}
+.explore-scroll::-webkit-scrollbar{display:none}
+.explore-row{display:flex;gap:10px;width:max-content}
+.explore-card{width:150px;background:var(--dark3);border:0.5px solid var(--border);border-radius:14px;overflow:hidden;cursor:pointer;transition:all 0.2s;flex-shrink:0}
+.explore-card:hover{border-color:rgba(200,169,110,0.3);transform:translateY(-2px)}
+.ec-img{height:100px;overflow:hidden;position:relative}
+.ec-img img{width:100%;height:100%;object-fit:cover}
+.ec-busy-badge{position:absolute;bottom:6px;left:8px;font-size:9px;font-weight:500;padding:3px 8px;border-radius:100px;backdrop-filter:blur(8px);background:rgba(0,0,0,0.55)}
+.ec-body{padding:10px}
+.ec-name{font-size:12px;font-weight:500;margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ec-type{font-size:10px;color:var(--text3)}
+.buz-list{padding:0 20px;display:flex;flex-direction:column;gap:10px}
+.buz-item{display:flex;align-items:center;gap:12px;background:var(--dark3);border:0.5px solid var(--border);border-radius:14px;overflow:hidden;cursor:pointer;transition:border-color 0.2s}
+.buz-item:hover{border-color:rgba(200,169,110,0.3)}
+.buz-img{width:70px;height:70px;flex-shrink:0;overflow:hidden}
+.buz-img img{width:100%;height:100%;object-fit:cover}
+.buz-info{flex:1;padding:10px 0}
+.buz-name{font-size:13px;font-weight:500;margin-bottom:3px}
+.buz-tags{font-size:11px;color:var(--text3)}
+.buz-badge{font-size:10px;padding:4px 10px;border-radius:100px;background:rgba(226,75,74,0.15);color:var(--red);font-weight:500;margin-right:12px;flex-shrink:0}
+
+/* ADD */
+.add-screen{padding:24px 20px 20px}
+.add-title{font-family:'Playfair Display',serif;font-size:26px;font-weight:700;margin-bottom:6px;padding-top:24px}
+.add-sub{font-size:13px;color:var(--text2);margin-bottom:28px;line-height:1.6}
+.step-indicator{display:flex;gap:6px;margin-bottom:28px}
+.step-dot{width:8px;height:8px;border-radius:50%;background:var(--border2);transition:all 0.3s}
+.step-dot.active{background:var(--gold);width:24px;border-radius:4px}
+.step-dot.done{background:rgba(200,169,110,0.5)}
+.add-step{display:none}
+.add-step.active{display:block}
+.add-step-label{font-size:11px;letter-spacing:0.12em;color:var(--text3);text-transform:uppercase;margin-bottom:16px}
+.location-card{background:var(--dark3);border:0.5px solid rgba(200,169,110,0.3);border-radius:16px;padding:18px;display:flex;align-items:center;gap:14px;margin-bottom:16px;cursor:pointer}
+.lc-thumb{width:48px;height:48px;border-radius:10px;overflow:hidden;flex-shrink:0}
+.lc-thumb img{width:100%;height:100%;object-fit:cover}
+.lc-info{flex:1}.lc-name{font-size:15px;font-weight:500}.lc-dist{font-size:12px;color:var(--text3)}
+.lc-check{font-size:20px;color:var(--gold)}
+.upload-zone{border:1.5px dashed var(--border2);border-radius:16px;padding:40px 20px;text-align:center;margin-bottom:16px;cursor:pointer;transition:all 0.2s}
+.upload-zone:hover{border-color:var(--gold);background:rgba(200,169,110,0.03)}
+.uz-icon{font-size:44px;margin-bottom:12px}.uz-text{font-size:14px;font-weight:500;margin-bottom:4px}.uz-sub{font-size:12px;color:var(--text3)}
+.add-tip{background:var(--dark3);border-radius:10px;padding:12px 14px;font-size:12px;color:var(--text2);line-height:1.5;border-left:3px solid var(--gold);margin-bottom:20px}
+.tag-grid-add{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:20px}
+.sel-tag{padding:8px 14px;border-radius:100px;border:0.5px solid var(--border2);background:transparent;color:var(--text2);font-size:13px;cursor:pointer;transition:all 0.2s;font-family:'DM Sans',sans-serif}
+.sel-tag.chosen{background:var(--gold);color:var(--dark);border-color:var(--gold);font-weight:500}
+.add-btn-p{width:100%;padding:15px;border-radius:100px;border:none;font-size:14px;font-family:'DM Sans',sans-serif;font-weight:500;cursor:pointer;background:var(--gold);color:var(--dark);margin-bottom:10px;transition:all 0.15s}
+.add-btn-p:hover{background:var(--gold-light)}
+.add-btn-s{width:100%;padding:14px;border-radius:100px;border:0.5px solid var(--border2);font-size:14px;font-family:'DM Sans',sans-serif;color:var(--text2);cursor:pointer;background:transparent;margin-bottom:10px}
+.earn-badge{display:inline-flex;align-items:center;gap:8px;background:rgba(200,169,110,0.1);border:0.5px solid rgba(200,169,110,0.3);border-radius:100px;padding:8px 16px;font-size:13px;color:var(--gold);font-weight:500;margin-bottom:20px}
+
+/* REWARDS - MILESTONE */
+.rewards-screen{padding:20px}
+.rh-top{padding-top:28px;margin-bottom:20px}
+.rh-eyebrow{font-size:11px;letter-spacing:0.12em;color:var(--text3);text-transform:uppercase;margin-bottom:8px}
+.rh-points{font-family:'Playfair Display',serif;font-size:52px;font-weight:700;color:var(--gold);line-height:1}
+.rh-sub{font-size:13px;color:var(--text2);margin-top:6px}
+.level-progress{background:var(--dark3);border-radius:16px;padding:16px;margin-bottom:24px;border:0.5px solid var(--border)}
+.lp-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+.lp-level{font-size:14px;font-weight:500}
+.lp-next{font-size:12px;color:var(--text3)}
+.lp-bar-bg{height:6px;background:var(--dark);border-radius:3px;overflow:hidden;margin-bottom:8px}
+.lp-bar-fill{height:100%;background:linear-gradient(90deg,#8B6914,var(--gold));border-radius:3px;transition:width 1s ease}
+.lp-hint{font-size:11px;color:var(--text3)}
+.lp-hint span{color:var(--gold);font-weight:500}
+.milestones-label{font-size:11px;letter-spacing:0.12em;color:var(--text3);text-transform:uppercase;margin-bottom:14px}
+.milestone-card{background:var(--dark3);border:0.5px solid var(--border);border-radius:16px;padding:16px;display:flex;align-items:center;gap:14px;margin-bottom:10px;position:relative;overflow:hidden}
+.milestone-card.unlocked{border-color:rgba(200,169,110,0.4)}
+.milestone-card.claimed{opacity:0.6}
+.mc-thumb{width:52px;height:52px;border-radius:12px;overflow:hidden;flex-shrink:0;position:relative}
+.mc-thumb img{width:100%;height:100%;object-fit:cover}
+.mc-info{flex:1}
+.mc-name{font-size:14px;font-weight:500;margin-bottom:3px}
+.mc-place{font-size:11px;color:var(--text3);margin-bottom:6px}
+.mc-bar-bg{height:4px;background:var(--dark);border-radius:2px;overflow:hidden}
+.mc-bar-fill{height:100%;border-radius:2px;transition:width 0.8s ease}
+.mc-bar-gold{background:var(--gold)}
+.mc-bar-gray{background:var(--border2)}
+.mc-status{text-align:right;flex-shrink:0}
+.mc-pts{font-size:13px;font-weight:500;color:var(--gold)}
+.mc-pts-lbl{font-size:10px;color:var(--text3)}
+.mc-claim-btn{margin-top:6px;padding:5px 14px;border-radius:100px;border:none;background:var(--gold);color:var(--dark);font-size:11px;font-weight:500;font-family:'DM Sans',sans-serif;cursor:pointer}
+.mc-claimed-badge{margin-top:6px;font-size:11px;color:var(--green);font-weight:500}
+.mc-locked-badge{margin-top:6px;font-size:11px;color:var(--text3)}
+.unlocked-glow{position:absolute;top:0;right:0;width:4px;height:100%;background:var(--gold)}
+.how-earn-btn{width:100%;padding:14px;border-radius:100px;border:0.5px solid var(--border2);background:transparent;color:var(--text2);font-family:'DM Sans',sans-serif;font-size:13px;cursor:pointer;margin-top:16px}
+.earn-modal{display:none;position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:430px;background:var(--dark2);border-top:0.5px solid var(--border2);border-radius:24px 24px 0 0;padding:24px 20px 40px;z-index:150}
+.earn-modal.open{display:block}
+.em-handle{width:40px;height:4px;background:var(--border2);border-radius:2px;margin:0 auto 20px}
+.em-title{font-size:17px;font-weight:500;margin-bottom:16px}
+.earn-item{display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:0.5px solid var(--border)}
+.earn-item:last-child{border-bottom:none}
+.ei-l{display:flex;align-items:center;gap:10px}
+.ei-icon{font-size:20px}.ei-text{font-size:13px}
+.ei-pts{font-size:14px;font-weight:500;color:var(--gold)}
+
+/* PROFILE */
+.profile-screen{padding:20px}
+.profile-header{padding-top:28px;text-align:center;margin-bottom:24px}
+.profile-avatar{width:76px;height:76px;border-radius:50%;overflow:hidden;margin:0 auto 12px;border:2.5px solid var(--gold)}
+.profile-avatar img{width:100%;height:100%;object-fit:cover}
+.profile-name{font-family:'Playfair Display',serif;font-size:22px;font-weight:700;margin-bottom:6px}
+.profile-level-badge{display:inline-flex;align-items:center;gap:6px;background:rgba(200,169,110,0.1);border:0.5px solid rgba(200,169,110,0.3);border-radius:100px;padding:5px 16px;font-size:12px;color:var(--gold)}
+.profile-stats{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:24px}
+.ps-card{background:var(--dark3);border-radius:12px;padding:14px;text-align:center;border:0.5px solid var(--border)}
+.ps-num{font-size:22px;font-weight:500}.ps-lbl{font-size:10px;color:var(--text3);margin-top:2px}
+.upload-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px;margin-bottom:24px}
+.ug-item{aspect-ratio:1;border-radius:8px;overflow:hidden;position:relative;cursor:pointer}
+.ug-item img{width:100%;height:100%;object-fit:cover}
+.ug-views{position:absolute;bottom:4px;right:6px;font-size:9px;color:rgba(245,240,232,0.85);background:rgba(0,0,0,0.5);padding:2px 5px;border-radius:4px}
+.saved-list{display:flex;flex-direction:column;gap:8px}
+.saved-item{display:flex;align-items:center;gap:12px;background:var(--dark3);border:0.5px solid var(--border);border-radius:14px;overflow:hidden;cursor:pointer}
+.si-img{width:60px;height:60px;flex-shrink:0;overflow:hidden}
+.si-img img{width:100%;height:100%;object-fit:cover}
+.si-info{flex:1;padding:8px 0}
+.si-name{font-size:13px;font-weight:500}.si-type{font-size:11px;color:var(--text3)}
+.si-remove{padding:0 14px;font-size:18px;color:var(--text3);cursor:pointer}
+
+.toast{position:fixed;bottom:100px;left:50%;transform:translateX(-50%);background:var(--gold);color:var(--dark);padding:10px 24px;border-radius:100px;font-size:13px;font-weight:500;z-index:500;opacity:0;transition:opacity 0.3s;pointer-events:none;white-space:nowrap}
+.toast.show{opacity:1}
+.overlay-bg{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:140}
+.overlay-bg.open{display:block}
+.shop-card{background:var(--dark3);border:0.5px solid var(--border);border-radius:16px;padding:14px;display:flex;align-items:center;gap:12px;margin-bottom:10px;transition:border-color 0.2s}
+.shop-card:hover{border-color:rgba(55,138,221,0.3)}
+.shop-card.redeemed{opacity:0.5}
+.sc-img{width:52px;height:52px;border-radius:10px;overflow:hidden;flex-shrink:0}
+.sc-img img{width:100%;height:100%;object-fit:cover}
+.sc-info{flex:1}
+.sc-name{font-size:14px;font-weight:500;margin-bottom:2px}
+.sc-place{font-size:11px;color:var(--text3);margin-bottom:6px}
+.sc-cost{display:flex;align-items:center;gap:4px;font-size:12px;color:#378ADD;font-weight:500}
+.sc-action{flex-shrink:0;text-align:right}
+.sc-redeem-btn{padding:7px 14px;border-radius:100px;border:none;background:#378ADD;color:#fff;font-size:12px;font-weight:500;font-family:'DM Sans',sans-serif;cursor:pointer;transition:all 0.15s;white-space:nowrap}
+.sc-redeem-btn:hover{background:#4a9ae8}
+.sc-redeem-btn:disabled{background:var(--dark4);color:var(--text3);cursor:not-allowed}
+.sc-redeemed{font-size:11px;color:var(--green);font-weight:500}
+.rank-card{display:flex;align-items:center;gap:12px;background:var(--dark3);border:0.5px solid var(--border);border-radius:14px;padding:14px;margin-bottom:8px}
+.rank-card.current-rank{border-color:rgba(200,169,110,0.4);background:rgba(200,169,110,0.05)}
+.rtab{transition:all 0.2s}
+.rtab:hover{color:var(--text)}
+.shop-tier-label{display:flex;align-items:center;gap:8px;margin:16px 0 10px}
+.stl-line{height:1px;flex:1;background:var(--border)}
+.stl-text{font-size:10px;font-weight:500;letter-spacing:0.1em;text-transform:uppercase;white-space:nowrap}
+.rc-badge{width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+.rc-info{flex:1}
+.rc-name{font-size:13px;font-weight:500}
+.rc-range{font-size:11px;color:var(--text3);margin-top:2px}
+.rc-you{font-size:11px;color:var(--gold);font-weight:500}
+</style>
+</head>
+<body>
+
+<!-- HOME -->
+<div class="screen active" id="screen-home">
+  <div class="app-header">
+    <div>
+      <div class="header-eyebrow">Seattle · Live now</div>
+      <div class="app-logo">Vibe <span>Check</span></div>
+    </div>
+    <div style="cursor:pointer;font-size:22px" onclick="showScreen('screen-profile')">👤</div>
+  </div>
+  <div class="stories-wrap"><div class="stories-row" id="storiesRow"></div></div>
+  <div class="mood-bar">
+    <div class="mood-pills">
+      <button class="mood-pill active" onclick="filterMood('all',this)">All places</button>
+      <button class="mood-pill" onclick="filterMood('fun',this)">🎉 Fun night out</button>
+      <button class="mood-pill" onclick="filterMood('chill',this)">🍜 Chill & eat</button>
+      <button class="mood-pill" onclick="filterMood('date',this)">💑 Date night</button>
+      <button class="mood-pill" onclick="filterMood('family',this)">👨‍👩‍👧 Family dinner</button>
+      <button class="mood-pill" onclick="filterMood('work',this)">💻 I need to work</button>
+    </div>
+  </div>
+  <div class="sec-label">Vibe of the week</div>
+  <div class="featured-wrap">
+    <div class="featured-card" onclick="openPlace(0)">
+      <img src="https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?w=800&q=80" alt="Velvet Hour">
+      <div class="live-badge">Buzzing now</div>
+      <div class="featured-overlay">
+        <div class="featured-name">Velvet Hour</div>
+        <div class="featured-desc">Jazz bar meets speakeasy. The kind of place you stumble into and stay for four hours.</div>
+        <div class="vibe-tags">
+          <span class="vibe-tag hot">Live jazz</span>
+          <span class="vibe-tag hot">Low lighting</span>
+          <span class="vibe-tag">Great cocktails</span>
+          <span class="vibe-tag">No entry fee</span>
+        </div>
+        <div class="busy-row">
+          <span class="busy-label">Right now</span>
+          <div class="busy-bars"><div class="b-bar on"></div><div class="b-bar on"></div><div class="b-bar on"></div><div class="b-bar on"></div><div class="b-bar"></div></div>
+          <span class="busy-text bt-buzzing">Buzzing</span>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="sec-label" style="margin-top:8px">All places</div>
+  <div class="places-wrap"><div class="places-grid" id="placesGrid"></div></div>
+</div>
+
+<!-- EXPLORE -->
+<div class="screen" id="screen-explore">
+  <div class="app-header">
+    <div><div class="header-eyebrow">Discover</div><div class="app-logo">Explore</div></div>
+  </div>
+  <div class="explore-search">
+    <div class="search-box">
+      <span>🔍</span>
+      <input type="text" placeholder="Search places, vibes, neighborhoods...">
+    </div>
+  </div>
+  <div class="explore-section">
+    <div class="explore-sec-header"><div class="es-title">🎉 Fun night out</div><div class="es-all" onclick="filterMood('fun',null);showScreen('screen-home')">See all</div></div>
+    <div class="explore-scroll"><div class="explore-row" id="exp-fun"></div></div>
+  </div>
+  <div class="explore-section">
+    <div class="explore-sec-header"><div class="es-title">💑 Date night</div><div class="es-all" onclick="filterMood('date',null);showScreen('screen-home')">See all</div></div>
+    <div class="explore-scroll"><div class="explore-row" id="exp-date"></div></div>
+  </div>
+  <div class="explore-section">
+    <div class="explore-sec-header"><div class="es-title">💻 Work-friendly</div><div class="es-all" onclick="filterMood('work',null);showScreen('screen-home')">See all</div></div>
+    <div class="explore-scroll"><div class="explore-row" id="exp-work"></div></div>
+  </div>
+  <div class="sec-label">🔥 Buzzing right now</div>
+  <div class="buz-list" id="buzzingList"></div>
+</div>
+
+<!-- ADD -->
+<div class="screen" id="screen-add">
+  <div class="add-screen">
+    <div class="add-title">Add your vibe</div>
+    <div class="add-sub">Show others what's really happening right now. Earn points for every upload — they never go away.</div>
+    <div class="step-indicator">
+      <div class="step-dot active" id="sd1"></div><div class="step-dot" id="sd2"></div><div class="step-dot" id="sd3"></div><div class="step-dot" id="sd4"></div>
+    </div>
+    <div class="add-step active" id="addStep1">
+      <div class="add-step-label">Step 1 of 4 — Where are you?</div>
+      <div class="location-card" onclick="nextStep()">
+        <div class="lc-thumb"><img src="https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?w=200&q=80" alt="Velvet Hour"></div>
+        <div class="lc-info"><div class="lc-name">Velvet Hour</div><div class="lc-dist">Jazz bar · Capitol Hill · 12m away</div></div>
+        <div class="lc-check">✓</div>
+      </div>
+      <div style="font-size:13px;color:var(--text3);text-align:center;margin-bottom:14px">or search for a different place</div>
+      <div class="search-box" style="margin-bottom:20px"><span>🔍</span><input type="text" placeholder="Search for a place..."></div>
+      <button class="add-btn-p" onclick="nextStep()">This is the place →</button>
+    </div>
+    <div class="add-step" id="addStep2">
+      <div class="add-step-label">Step 2 of 4 — Upload your clip or photo</div>
+      <div class="upload-zone" onclick="nextStep()">
+        <div class="uz-icon">📹</div>
+        <div class="uz-text">Tap to upload</div>
+        <div class="uz-sub">15–60 sec video preferred · Photo works too</div>
+      </div>
+      <div class="add-tip">💡 Show the room, not your face. Wide shots of the crowd, lighting, and energy are the most helpful for other users.</div>
+      <button class="add-btn-p" onclick="nextStep()">Looks good →</button>
+      <button class="add-btn-s" onclick="nextStep()">Skip for now</button>
+    </div>
+    <div class="add-step" id="addStep3">
+      <div class="add-step-label">Step 3 of 4 — Pick your vibe tags</div>
+      <div style="font-size:13px;color:var(--text2);margin-bottom:14px">Choose 3 tags that describe the vibe right now</div>
+      <div class="tag-grid-add" id="tagGrid"></div>
+      <button class="add-btn-p" onclick="nextStep()">Tag it →</button>
+    </div>
+    <div class="add-step" id="addStep4">
+      <div style="text-align:center;padding:20px 0">
+        <div style="font-size:72px;margin-bottom:16px">🎉</div>
+        <div style="font-family:'Playfair Display',serif;font-size:22px;font-weight:700;margin-bottom:8px">Vibe uploaded!</div>
+        <div style="font-size:13px;color:var(--text2);margin-bottom:20px;line-height:1.6">Your clip is now live on<br>Velvet Hour's story feed</div>
+        <div class="earn-badge">⭐ +50 Vibe Points earned</div>
+        <div style="font-size:12px;color:var(--text3);margin-bottom:24px">Your points total is now 1,290 · Points never decrease</div>
+      </div>
+      <button class="add-btn-p" onclick="showScreen('screen-rewards')">See your rewards →</button>
+      <button class="add-btn-s" onclick="resetAdd();showScreen('screen-home')">Back to home</button>
+    </div>
+  </div>
+</div>
+
+<!-- REWARDS -->
+<div class="screen" id="screen-rewards">
+  <div class="rewards-screen">
+
+    <!-- HEADER -->
+    <div style="padding-top:28px;margin-bottom:20px">
+      <div style="font-size:11px;letter-spacing:0.12em;color:var(--text3);text-transform:uppercase;margin-bottom:10px">Your wallet</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px">
+        <div style="background:var(--dark3);border:0.5px solid rgba(200,169,110,0.35);border-radius:16px;padding:16px">
+          <div style="font-size:10px;letter-spacing:0.1em;color:var(--text3);text-transform:uppercase;margin-bottom:8px">⭐ Vibe Points</div>
+          <div style="font-family:'Playfair Display',serif;font-size:36px;font-weight:700;color:var(--gold);line-height:1;margin-bottom:4px">1,290</div>
+          <div style="font-size:10px;color:var(--text3);line-height:1.5;margin-bottom:10px">Goes up forever<br>Never spent on rewards</div>
+          <div style="height:4px;background:var(--dark);border-radius:2px;overflow:hidden;margin-bottom:6px">
+            <div style="height:100%;width:64%;background:linear-gradient(90deg,#8B6914,var(--gold));border-radius:2px"></div>
+          </div>
+          <div style="font-size:10px;color:var(--gold)">📍 Local · 710 pts to Insider</div>
+        </div>
+        <div style="background:var(--dark3);border:0.5px solid rgba(55,138,221,0.35);border-radius:16px;padding:16px">
+          <div style="font-size:10px;letter-spacing:0.1em;color:var(--text3);text-transform:uppercase;margin-bottom:8px">🪙 Vibe Coins</div>
+          <div style="font-family:'Playfair Display',serif;font-size:36px;font-weight:700;color:#378ADD;line-height:1;margin-bottom:4px">84</div>
+          <div style="font-size:10px;color:var(--text3);line-height:1.5;margin-bottom:10px">Spend on rewards<br>Rank never affected</div>
+          <div style="background:rgba(55,138,221,0.1);border-radius:8px;padding:6px 8px;font-size:10px;color:#378ADD">🎯 16 coins to free coffee</div>
+        </div>
+      </div>
+
+      <!-- EARN BOTH STRIP -->
+      <div style="background:var(--dark3);border:0.5px solid var(--border);border-radius:12px;padding:12px 14px">
+        <div style="font-size:11px;font-weight:500;color:var(--text2);margin-bottom:10px">Every action earns both currencies:</div>
+        <div style="display:flex;flex-direction:column;gap:7px">
+          <div style="display:flex;justify-content:space-between;align-items:center;font-size:12px">
+            <span style="color:var(--text2)">📹 Upload a clip</span>
+            <span style="display:flex;gap:8px"><span style="color:var(--gold);font-weight:500">+50 pts</span><span style="color:#378ADD;font-weight:500">+10 🪙</span></span>
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:center;font-size:12px">
+            <span style="color:var(--text2)">📸 Upload a photo</span>
+            <span style="display:flex;gap:8px"><span style="color:var(--gold);font-weight:500">+20 pts</span><span style="color:#378ADD;font-weight:500">+4 🪙</span></span>
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:center;font-size:12px">
+            <span style="color:var(--text2)">🏷️ Add vibe tags</span>
+            <span style="display:flex;gap:8px"><span style="color:var(--gold);font-weight:500">+10 pts</span><span style="color:#378ADD;font-weight:500">+2 🪙</span></span>
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:center;font-size:12px">
+            <span style="color:var(--text2)">🆕 First upload at new place</span>
+            <span style="display:flex;gap:8px"><span style="color:var(--gold);font-weight:500">+100 pts</span><span style="color:#378ADD;font-weight:500">+20 🪙</span></span>
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:center;font-size:12px">
+            <span style="color:var(--text2)">🔥 Clip gets 100+ views</span>
+            <span style="display:flex;gap:8px"><span style="color:var(--gold);font-weight:500">+25 pts</span><span style="color:#378ADD;font-weight:500">+5 🪙</span></span>
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:center;font-size:12px">
+            <span style="color:var(--text2)">👥 Refer a friend</span>
+            <span style="display:flex;gap:8px"><span style="color:var(--gold);font-weight:500">+75 pts</span><span style="color:#378ADD;font-weight:500">+15 🪙</span></span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- REWARD SHOP TABS -->
+    <div style="display:flex;gap:0;border-bottom:0.5px solid var(--border);margin-bottom:16px" id="rewardTabs">
+      <div class="rtab active" onclick="switchRewardTab('shop',this)" style="flex:1;padding:10px;text-align:center;font-size:13px;color:var(--gold);border-bottom:2px solid var(--gold);cursor:pointer">🪙 Coin Shop</div>
+      <div class="rtab" onclick="switchRewardTab('rank',this)" style="flex:1;padding:10px;text-align:center;font-size:13px;color:var(--text3);border-bottom:2px solid transparent;cursor:pointer">⭐ Rank Ladder</div>
+    </div>
+
+    <div id="rewardShop"></div>
+    <div id="rankLadder" style="display:none"></div>
+
+  </div>
+</div>
+
+<!-- PROFILE -->
+<div class="screen" id="screen-profile">
+  <div class="profile-screen">
+    <div class="profile-header">
+      <div class="profile-avatar"><img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=200&q=80" alt="Profile"></div>
+      <div class="profile-name">Sanyukta</div>
+      <div style="margin-top:6px"><span class="profile-level-badge">⭐ Local · 1,290 pts</span></div>
+    </div>
+    <div class="profile-stats">
+      <div class="ps-card"><div class="ps-num">7</div><div class="ps-lbl">Uploads</div></div>
+      <div class="ps-card"><div class="ps-num">23</div><div class="ps-lbl">Places visited</div></div>
+      <div class="ps-card"><div class="ps-num">1.2k</div><div class="ps-lbl">Views earned</div></div>
+    </div>
+    <div class="sec-label" style="padding:0;margin-bottom:12px">My uploads</div>
+    <div class="upload-grid" id="uploadGrid"></div>
+    <div class="sec-label" style="padding:0;margin:16px 0 12px">Saved places</div>
+    <div class="saved-list" id="savedList"></div>
+  </div>
+</div>
+
+<!-- PLACE PAGE -->
+<div class="screen" id="screen-place"><div id="placePageContent"></div></div>
+
+<!-- STORY VIEWER -->
+<div class="story-viewer" id="storyViewer">
+  <div class="story-bg"><img id="storyBgImg" src="" alt=""></div>
+  <div class="story-ui">
+    <div class="story-progress" id="storyProgress"></div>
+    <div class="story-header">
+      <div><div class="sh-place" id="storyPlaceName"></div></div>
+      <div class="sh-time" id="storyTime"></div>
+      <button class="sh-close" onclick="closeStory()">×</button>
+    </div>
+    <div class="story-center"><div class="story-tags-overlay" id="storyTagsOverlay"></div></div>
+    <div class="story-reactions">
+      <div class="sr-btn" onclick="tapReaction(this)">🔥 Going tonight</div>
+      <div class="sr-btn" onclick="tapReaction(this)">😍 Looks fun</div>
+      <div class="sr-btn" onclick="tapReaction(this)">😐 Not my scene</div>
+    </div>
+    <div class="story-swipe-up" id="storySwipeUp"></div>
+  </div>
+</div>
+
+<!-- EARN MODAL -->
+<div class="overlay-bg" id="overlayBg" onclick="closeEarnModal()"></div>
+<div class="earn-modal" id="earnModal">
+  <div class="em-handle"></div>
+  <div class="em-title">How to earn Vibe Points</div>
+  <div class="earn-item"><div class="ei-l"><div class="ei-icon">📹</div><div class="ei-text">Upload a video clip</div></div><div class="ei-pts">+50 pts</div></div>
+  <div class="earn-item"><div class="ei-l"><div class="ei-icon">📸</div><div class="ei-text">Upload a photo</div></div><div class="ei-pts">+20 pts</div></div>
+  <div class="earn-item"><div class="ei-l"><div class="ei-icon">🏷️</div><div class="ei-text">Add vibe tags after visiting</div></div><div class="ei-pts">+10 pts</div></div>
+  <div class="earn-item"><div class="ei-l"><div class="ei-icon">🆕</div><div class="ei-text">First upload at a new place</div></div><div class="ei-pts">+100 pts</div></div>
+  <div class="earn-item"><div class="ei-l"><div class="ei-icon">🔥</div><div class="ei-text">Your clip gets 100+ views</div></div><div class="ei-pts">+25 pts</div></div>
+  <div class="earn-item"><div class="ei-l"><div class="ei-icon">👥</div><div class="ei-text">Refer a friend who uploads</div></div><div class="ei-pts">+75 pts</div></div>
+  <div style="margin-top:16px;font-size:12px;color:var(--text3);line-height:1.6;background:var(--dark3);padding:12px;border-radius:10px">⭐ Points never decrease. Rewards unlock automatically at milestones — no spending required.</div>
+</div>
+
+<!-- BOTTOM NAV -->
+<div class="bottom-nav">
+  <div class="nav-tab active" id="nav-home" onclick="showScreen('screen-home')"><div class="ni">🏠</div><div class="nl">Home</div></div>
+  <div class="nav-tab" id="nav-explore" onclick="showScreen('screen-explore')"><div class="ni">🔍</div><div class="nl">Explore</div></div>
+  <div class="nav-tab add-tab" id="nav-add" onclick="showScreen('screen-add')"><div class="add-wrap"><div class="ni">+</div></div><div class="nl" style="margin-top:4px">Add</div></div>
+  <div class="nav-tab" id="nav-rewards" onclick="showScreen('screen-rewards')"><div class="ni">⭐</div><div class="nl">Rewards</div></div>
+  <div class="nav-tab" id="nav-profile" onclick="showScreen('screen-profile')"><div class="ni">👤</div><div class="nl">Profile</div></div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+const places=[
+  {name:"Velvet Hour",type:"Jazz bar · Capitol Hill",img:"https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?w=600&q=80",moods:["fun","date"],tags:["Live jazz","Low lighting","Great cocktails","No entry fee","Intimate","Date-perfect"],busy:"Buzzing",busyBars:4,busyClass:"bt-buzzing",bestFor:["Date nights","Special occasions","Small groups"],notFor:["Large parties","Early nights","Kids"],clip:"Visitor walkthrough · 23 min ago · Full bar and jazz setup",bestTime:"9pm–12am",worstTime:"Before 8pm",price:"$$",entry:"No entry fee",reservation:"Recommended",parking:"Street"},
+  {name:"Kumo Kitchen",type:"Ramen bar · Fremont",img:"https://images.unsplash.com/photo-1569050467447-ce54b3bbc37d?w=600&q=80",moods:["chill","family"],tags:["Open kitchen","Warm lighting","Authentic","Small space","No reservations"],busy:"Moderate",busyBars:3,busyClass:"bt-moderate",bestFor:["Solo dining","Rainy nights","Authentic food"],notFor:["Large groups","Quick meals","Loud nights"],clip:"Full walkthrough · 6 hrs ago · Portion size, seating, chef at work",bestTime:"6pm–8pm",worstTime:"After 9pm",price:"$$",entry:"None",reservation:"Not needed",parking:"Garage nearby"},
+  {name:"Morning Brew",type:"Café · South Lake Union",img:"https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?w=600&q=80",moods:["work","chill"],tags:["Good WiFi","Plenty of outlets","Actually quiet","No time limit","Great espresso"],busy:"Quiet",busyBars:2,busyClass:"bt-quiet",bestFor:["Laptop work","Solo visits","Long sessions"],notFor:["Loud calls","Large groups","Evening visits"],clip:"Remote worker setup · 2 hrs ago · Shows outlet spots and noise level",bestTime:"7am–11am",worstTime:"12pm–2pm",price:"$",entry:"None",reservation:"Not needed",parking:"Limited"},
+  {name:"Canvas Nights",type:"Art bar · Belltown",img:"https://images.unsplash.com/photo-1518998053901-5348d3961a04?w=600&q=80",moods:["fun","date"],tags:["Genuinely creative","Local artists","Rotating exhibits","Loud music","Cash bar"],busy:"Packed",busyBars:5,busyClass:"bt-packed",bestFor:["Creative types","First dates","Art lovers"],notFor:["Quiet conversations","Kids","Early evenings"],clip:"Full vibe · Last Friday · Real crowd, rotating art",bestTime:"9pm–1am",worstTime:"Before 8pm",price:"$$",entry:"$5 weekends",reservation:"Not needed",parking:"Street"},
+  {name:"Green Table",type:"Family restaurant · Ballard",img:"https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=600&q=80",moods:["family","chill"],tags:["Kid-friendly","High chairs available","Fast service","Spacious","Healthy menu"],busy:"Moderate",busyBars:3,busyClass:"bt-moderate",bestFor:["Families with kids","Sunday lunch","Dietary needs"],notFor:["Date nights","Late evenings","Bar focus"],clip:"Parent visit with toddler · 1 day ago · Space and service speed",bestTime:"11am–2pm",worstTime:"5pm–7pm",price:"$$",entry:"None",reservation:"Recommended weekends",parking:"Free lot"},
+  {name:"Old Harbor Spot",type:"Bar · Pioneer Square",img:"https://images.unsplash.com/photo-1466978913421-dad2ebd01d17?w=600&q=80",moods:["fun"],tags:["Local crowd","Hidden gem","No tourists","Cheap drinks","Cash only"],busy:"Buzzing",busyBars:4,busyClass:"bt-buzzing",bestFor:["Local regulars","Late nights","Groups"],notFor:["Tourists","Quiet evenings","Food focus"],clip:"Regular's Friday · 3 hrs ago · Real crowd, no tourist energy",bestTime:"10pm–2am",worstTime:"Before 9pm",price:"$",entry:"None",reservation:"Not needed",parking:"Street"},
+  {name:"Bean Theory",type:"Café · Capitol Hill",img:"https://images.unsplash.com/photo-1554118811-1e0d58224f24?w=600&q=80",moods:["work"],tags:["Strong WiFi","Lots of outlets","Work-friendly","No laptop shame","Good light"],busy:"Quiet",busyBars:2,busyClass:"bt-quiet",bestFor:["Remote workers","Long sessions","Video calls ok"],notFor:["Loud groups","Evening dining","Kids"],clip:"Freelancer session · 4 hrs ago · Full setup and noise level",bestTime:"8am–3pm",worstTime:"After 4pm",price:"$",entry:"None",reservation:"Not needed",parking:"Street"},
+  {name:"Sakura Omakase",type:"Japanese · Downtown",img:"https://images.unsplash.com/photo-1579871494447-9811cf80d66c?w=600&q=80",moods:["date"],tags:["Reservation required","Intimate","Chef's table","Worth every cent","Special occasion"],busy:"Moderate",busyBars:3,busyClass:"bt-moderate",bestFor:["Special occasions","Serious dates","Food lovers"],notFor:["Casual nights","Large groups","Budget meals"],clip:"Full omakase experience · Yesterday · Start to finish walkthrough",bestTime:"7pm–9pm",worstTime:"Walk-ins never work",price:"$$$$",entry:"None",reservation:"Required",parking:"Valet"}
+];
+
+const stories=[
+  {place:"Velvet Hour",time:"8 min ago",img:"https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?w=600&q=80",tags:["Live jazz","Buzzing","No entry"]},
+  {place:"Canvas Nights",time:"22 min ago",img:"https://images.unsplash.com/photo-1518998053901-5348d3961a04?w=600&q=80",tags:["Packed","Great art","Loud"]},
+  {place:"Old Harbor Spot",time:"34 min ago",img:"https://images.unsplash.com/photo-1466978913421-dad2ebd01d17?w=600&q=80",tags:["Local crowd","Cheap drinks"]},
+  {place:"Morning Brew",time:"1 hr ago",img:"https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?w=600&q=80",tags:["Quiet","Good WiFi"]},
+  {place:"Kumo Kitchen",time:"2 hrs ago",img:"https://images.unsplash.com/photo-1569050467447-ce54b3bbc37d?w=600&q=80",tags:["Authentic","Moderate"]},
+  {place:"Bean Theory",time:"3 hrs ago",img:"https://images.unsplash.com/photo-1554118811-1e0d58224f24?w=600&q=80",tags:["Work-friendly","Quiet"]},
+];
+
+const milestones=[
+  // TIER 1 — Quick wins (25–200 pts)
+  {tier:"Quick wins",emoji:"☕",name:"Free coffee",place:"Morning Brew",pts:50,img:"https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?w=200&q=80",status:"claimed",desc:"Just upload your first vibe"},
+  {tier:"Quick wins",emoji:"🧁",name:"Free pastry",place:"Bean Theory",pts:100,img:"https://images.unsplash.com/photo-1554118811-1e0d58224f24?w=200&q=80",status:"claimed",desc:"Add vibe tags to 5 places"},
+  {tier:"Quick wins",emoji:"🍺",name:"First drink on us",place:"Old Harbor Spot",pts:200,img:"https://images.unsplash.com/photo-1466978913421-dad2ebd01d17?w=200&q=80",status:"claimed",desc:"Upload 3 clips in a week"},
+  // TIER 2 — Building up (300–800 pts)
+  {tier:"Building up",emoji:"🎟️",name:"Free entry",place:"Canvas Nights",pts:350,img:"https://images.unsplash.com/photo-1518998053901-5348d3961a04?w=200&q=80",status:"claimed",desc:"Contribute to 5 different places"},
+  {tier:"Building up",emoji:"🍜",name:"10% off your bill",place:"Kumo Kitchen",pts:500,img:"https://images.unsplash.com/photo-1569050467447-ce54b3bbc37d?w=200&q=80",status:"claimed",desc:"Reach Local level"},
+  {tier:"Building up",emoji:"🍹",name:"Free cocktail",place:"Velvet Hour",pts:750,img:"https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?w=200&q=80",status:"claimed",desc:"Upload 10 vibes total"},
+  {tier:"Building up",emoji:"🥗",name:"Free starter",place:"Green Table",pts:900,img:"https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=200&q=80",status:"claimed",desc:"Get 500 views on your clips"},
+  // TIER 3 — Getting serious (1000–1500 pts) — USER IS HERE
+  {tier:"Getting serious",emoji:"🌟",name:"Priority reservation",place:"Sakura Omakase",pts:1000,img:"https://images.unsplash.com/photo-1579871494447-9811cf80d66c?w=200&q=80",status:"claimed",desc:"Reach 1,000 total points"},
+  {tier:"Getting serious",emoji:"🎂",name:"Birthday table upgrade",place:"Any partner venue",pts:1100,img:"https://images.unsplash.com/photo-1513558161293-cdaf765ed2fd?w=200&q=80",status:"unlocked",desc:"You've unlocked this — claim it!"},
+  {tier:"Getting serious",emoji:"🍾",name:"Complimentary glass of wine",place:"Sakura Omakase",pts:1340,img:"https://images.unsplash.com/photo-1470337458703-46ad1756a187?w=200&q=80",status:"locked",desc:"Just 50 more points to go"},
+  {tier:"Getting serious",emoji:"🎵",name:"Skip the queue",place:"Canvas Nights",pts:1500,img:"https://images.unsplash.com/photo-1518998053901-5348d3961a04?w=200&q=80",status:"locked",desc:"Become a top contributor"},
+  // TIER 4 — Crazy rewards (2000+ pts)
+  {tier:"Crazy rewards",emoji:"👑",name:"VIP table for 4",place:"Velvet Hour",pts:2000,img:"https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?w=200&q=80",status:"locked",desc:"Reach Insider level"},
+  {tier:"Crazy rewards",emoji:"🍱",name:"Full omakase meal (2 people)",place:"Sakura Omakase",pts:3000,img:"https://images.unsplash.com/photo-1579871494447-9811cf80d66c?w=200&q=80",status:"locked",desc:"Become a Vibe Authority"},
+  {tier:"Crazy rewards",emoji:"🏆",name:"Name on the Vibe Wall",place:"Vibe Check HQ",pts:5000,img:"https://images.unsplash.com/photo-1470337458703-46ad1756a187?w=200&q=80",status:"locked",desc:"The rarest reward. Very few earn this."},
+];
+
+const vibeTags=["Loud","Chill","Live DJ","Packed","Dead tonight","Romantic","Solo-friendly","Great for groups","No entry fee","Actually quiet","Good WiFi","Kid-friendly","Local crowd","Raw & real","Worth the hype","Live music","Work-friendly","Intimate","Hidden gem","Fast service"];
+const uploads=[
+  {img:"https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?w=300&q=80",views:"342"},
+  {img:"https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?w=300&q=80",views:"89"},
+  {img:"https://images.unsplash.com/photo-1569050467447-ce54b3bbc37d?w=300&q=80",views:"201"},
+  {img:"https://images.unsplash.com/photo-1518998053901-5348d3961a04?w=300&q=80",views:"156"},
+  {img:"https://images.unsplash.com/photo-1466978913421-dad2ebd01d17?w=300&q=80",views:"78"},
+  {img:"https://images.unsplash.com/photo-1554118811-1e0d58224f24?w=300&q=80",views:"234"},
+];
+const saved=[
+  {img:"https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?w=200&q=80",name:"Velvet Hour",type:"Jazz bar · Capitol Hill"},
+  {img:"https://images.unsplash.com/photo-1579871494447-9811cf80d66c?w=200&q=80",name:"Sakura Omakase",type:"Japanese · Downtown"},
+  {img:"https://images.unsplash.com/photo-1569050467447-ce54b3bbc37d?w=200&q=80",name:"Kumo Kitchen",type:"Ramen bar · Fremont"},
+];
+
+const userPts=1290;
+let currentStory=0,storyTimer=null,currentStep=1,chosenTags=[],currentMood='all';
+
+function getBars(n){let h='';for(let i=0;i<5;i++)h+=`<div class="b-bar${i<n?' on':''}"></div>`;return h;}
+function showToast(m){const t=document.getElementById('toast');t.textContent=m;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2500);}
+function showScreen(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  document.querySelectorAll('.nav-tab').forEach(t=>t.classList.remove('active'));
+  const map={['screen-home']:'nav-home',['screen-explore']:'nav-explore',['screen-add']:'nav-add',['screen-rewards']:'nav-rewards',['screen-profile']:'nav-profile'};
+  if(map[id])document.getElementById(map[id]).classList.add('active');
+  window.scrollTo(0,0);
+}
+
+function renderStories(){
+  document.getElementById('storiesRow').innerHTML=stories.map((s,i)=>`
+    <div class="story-item" onclick="openStory(${i})">
+      <div class="story-ring"><div class="story-inner"><img src="${s.img}" alt="${s.place}"></div></div>
+      <div class="story-name">${s.place}</div>
+    </div>`).join('');
+}
+
+function openStory(idx){
+  currentStory=idx;
+  document.getElementById('storyViewer').classList.add('open');
+  renderStoryUI();startStoryTimer();
+}
+function renderStoryUI(){
+  const s=stories[currentStory];
+  document.getElementById('storyBgImg').src=s.img;
+  document.getElementById('storyPlaceName').textContent=s.place;
+  document.getElementById('storyTime').textContent=s.time;
+  document.getElementById('storyProgress').innerHTML=stories.map((_,i)=>`<div class="sp-bar"><div class="sp-fill${i<currentStory?' done':i===currentStory?' active':''}"></div></div>`).join('');
+  document.getElementById('storyTagsOverlay').innerHTML=s.tags.map(t=>`<span class="story-tag">${t}</span>`).join('');
+  const pi=places.findIndex(p=>p.name===s.place);
+  const sw=document.getElementById('storySwipeUp');
+  sw.textContent=pi>=0?'↑ Swipe up for full vibe':'';
+  sw.onclick=pi>=0?()=>{closeStory();openPlace(pi);}:null;
+  document.querySelectorAll('.sr-btn').forEach(b=>b.classList.remove('tapped'));
+}
+function startStoryTimer(){clearTimeout(storyTimer);storyTimer=setTimeout(()=>{if(currentStory<stories.length-1){currentStory++;renderStoryUI();startStoryTimer();}else closeStory();},5000);}
+function closeStory(){document.getElementById('storyViewer').classList.remove('open');clearTimeout(storyTimer);}
+function tapReaction(el){document.querySelectorAll('.sr-btn').forEach(b=>b.classList.remove('tapped'));el.classList.add('tapped');showToast('Reaction saved!');}
+
+function renderGrid(){
+  document.getElementById('placesGrid').innerHTML=places.map((p,i)=>{
+    const show=currentMood==='all'||p.moods.includes(currentMood);
+    return`<div class="place-card${show?'':' hidden'}" onclick="openPlace(${i})">
+      <div class="place-img"><img src="${p.img}" alt="${p.name}" loading="lazy"><div class="place-busy-overlay ${p.busyClass}">${p.busy}</div></div>
+      <div class="place-body">
+        <div class="place-name">${p.name}</div>
+        <div class="place-type">${p.type}</div>
+        <div class="place-tags">${p.tags.slice(0,2).map(t=>`<span class="place-tag">${t}</span>`).join('')}</div>
+        <button class="view-btn">View vibe</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+function filterMood(mood,btn){
+  currentMood=mood;
+  if(btn){document.querySelectorAll('.mood-pill').forEach(p=>p.classList.remove('active'));btn.classList.add('active');}
+  renderGrid();
+}
+
+function openPlace(idx){
+  const p=places[idx];
+  const ps=stories.filter(s=>s.place===p.name);
+  document.getElementById('placePageContent').innerHTML=`
+    <div class="place-page-img">
+      <img src="${p.img}" alt="${p.name}">
+      <div class="place-page-img-overlay"></div>
+      <button class="back-btn" onclick="history.back()">←</button>
+    </div>
+    ${ps.length?`<div style="padding:16px 0 0"><div class="sec-label" style="padding:0 20px;margin-bottom:12px">Recent stories</div><div class="place-stories"><div class="place-stories-row">${ps.map(s=>`<div class="ps-item"><div class="ps-thumb"><img src="${s.img}" alt="${s.place}"><div class="ps-time">${s.time}</div></div><div class="ps-tag">${s.tags[0]}</div></div>`).join('')}</div></div></div>`:''}
+    <div class="place-page-body">
+      <div class="place-page-name">${p.name}</div>
+      <div class="place-page-type">${p.type}</div>
+      <div class="vibe-tags" style="margin-bottom:20px">${p.tags.map(t=>`<span class="vibe-tag">${t}</span>`).join('')}</div>
+      <div class="pp-section"><div class="pp-sec-label">Right now</div>
+        <div class="now-grid">
+          <div class="now-card"><div class="now-val ${p.busyClass}">${p.busy}</div><div class="now-lbl">Crowd level</div></div>
+          <div class="now-card"><div class="busy-bars" style="justify-content:center;gap:2px">${getBars(p.busyBars)}</div><div class="now-lbl" style="margin-top:4px">Energy</div></div>
+          <div class="now-card"><div class="now-val" style="font-size:11px">${p.bestTime}</div><div class="now-lbl">Best tonight</div></div>
+        </div>
+      </div>
+      <div class="pp-section"><div class="pp-sec-label">Is this for you?</div>
+        <div class="best-grid">
+          <div class="bf-card"><div class="bf-label">Best for</div><div class="bf-items">${p.bestFor.join('<br>')}</div></div>
+          <div class="bf-card"><div class="bf-label">Not great for</div><div class="bf-items">${p.notFor.join('<br>')}</div></div>
+        </div>
+      </div>
+      <div class="pp-section"><div class="pp-sec-label">Vibe clip</div>
+        <div class="clip-box"><div class="clip-dot"></div><div class="clip-text">${p.clip}</div></div>
+      </div>
+      <div class="pp-section"><div class="pp-sec-label">Quick facts</div>
+        <div class="quick-grid">
+          <div class="qf-item"><span class="qf-icon">💰</span><span class="qf-text">${p.price}</span></div>
+          <div class="qf-item"><span class="qf-icon">🎟️</span><span class="qf-text">${p.entry}</span></div>
+          <div class="qf-item"><span class="qf-icon">📅</span><span class="qf-text">${p.reservation}</span></div>
+          <div class="qf-item"><span class="qf-icon">🚗</span><span class="qf-text">${p.parking}</span></div>
+        </div>
+      </div>
+      <div class="decision-row">
+        <button class="dec-btn btn-yes" onclick="showToast('Opening in Maps... 🗺️')">I'm going tonight</button>
+        <button class="dec-btn btn-no" onclick="showScreen('screen-home')">Not my vibe</button>
+      </div>
+      <button class="add-vibe-btn" onclick="showScreen('screen-add')">📸 Add your vibe here → earn points</button>
+    </div>`;
+  showScreen('screen-place');
+}
+
+function renderExplore(){
+  ['fun','date','work'].forEach(mood=>{
+    const el=document.getElementById(`exp-${mood}`);
+    if(!el)return;
+    el.innerHTML=places.filter(p=>p.moods.includes(mood)).map(p=>{
+      const i=places.indexOf(p);
+      return`<div class="explore-card" onclick="openPlace(${i})">
+        <div class="ec-img"><img src="${p.img}" alt="${p.name}" loading="lazy"><div class="ec-busy-badge ${p.busyClass}">${p.busy}</div></div>
+        <div class="ec-body"><div class="ec-name">${p.name}</div><div class="ec-type">${p.type}</div></div>
+      </div>`;
+    }).join('');
+  });
+  document.getElementById('buzzingList').innerHTML=places.filter(p=>p.busyBars>=4).map(p=>{
+    const i=places.indexOf(p);
+    return`<div class="buz-item" onclick="openPlace(${i})">
+      <div class="buz-img"><img src="${p.img}" alt="${p.name}" loading="lazy"></div>
+      <div class="buz-info"><div class="buz-name">${p.name}</div><div class="buz-tags">${p.tags.slice(0,2).join(' · ')}</div></div>
+      <div class="buz-badge">${p.busy}</div>
+    </div>`;
+  }).join('');
+}
+
+function renderMilestones(){
+  document.getElementById('milestonesList').innerHTML=milestones.map((m,i)=>{
+    const pct=Math.min(100,Math.round((userPts/m.pts)*100));
+    const unlocked=m.status==='unlocked';
+    const claimed=m.status==='claimed';
+    const locked=m.status==='locked';
+    return`<div class="milestone-card${unlocked?' unlocked':claimed?' claimed':''}">
+      ${unlocked?'<div class="unlocked-glow"></div>':''}
+      <div class="mc-thumb"><img src="${m.img}" alt="${m.name}"></div>
+      <div class="mc-info">
+        <div class="mc-name">${m.emoji} ${m.name}</div>
+        <div class="mc-place">${m.place}</div>
+        <div class="mc-bar-bg"><div class="mc-bar-fill ${claimed||unlocked?'mc-bar-gold':'mc-bar-gray'}" style="width:${claimed?100:unlocked?100:pct}%"></div></div>
+      </div>
+      <div class="mc-status">
+        <div class="mc-pts">${m.pts}</div>
+        <div class="mc-pts-lbl">pts</div>
+        ${unlocked?`<button class="mc-claim-btn" onclick="showToast('Reward claimed! 🎉');this.parentElement.parentElement.classList.add('claimed');this.outerHTML='<div class=\\'mc-claimed-badge\\'>✓ Claimed</div>'">Claim</button>`:''}
+        ${claimed?'<div class="mc-claimed-badge">✓ Claimed</div>':''}
+        ${locked?`<div class="mc-locked-badge">${userPts}/${m.pts}</div>`:''}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function openEarnModal(){document.getElementById('earnModal').classList.add('open');document.getElementById('overlayBg').classList.add('open');}
+function closeEarnModal(){document.getElementById('earnModal').classList.remove('open');document.getElementById('overlayBg').classList.remove('open');}
+
+function renderProfile(){
+  document.getElementById('uploadGrid').innerHTML=uploads.map(u=>`<div class="ug-item"><img src="${u.img}" alt="" loading="lazy"><div class="ug-views">👁 ${u.views}</div></div>`).join('');
+  document.getElementById('savedList').innerHTML=saved.map(s=>`<div class="saved-item"><div class="si-img"><img src="${s.img}" alt="${s.name}"></div><div class="si-info"><div class="si-name">${s.name}</div><div class="si-type">${s.type}</div></div><div class="si-remove" onclick="showToast('Removed from saved')">×</div></div>`).join('');
+}
+
+function renderAddTags(){
+  chosenTags=[];
+  document.getElementById('tagGrid').innerHTML=vibeTags.map(t=>`<button class="sel-tag" onclick="toggleTag(this,'${t}')">${t}</button>`).join('');
+}
+function toggleTag(el,tag){
+  if(el.classList.contains('chosen')){el.classList.remove('chosen');chosenTags=chosenTags.filter(t=>t!==tag);}
+  else if(chosenTags.length<3){el.classList.add('chosen');chosenTags.push(tag);}
+  else showToast('Pick up to 3 tags');
+}
+function nextStep(){
+  if(currentStep<4){
+    document.getElementById(`addStep${currentStep}`).classList.remove('active');
+    document.getElementById(`sd${currentStep}`).classList.remove('active');
+    document.getElementById(`sd${currentStep}`).classList.add('done');
+    currentStep++;
+    document.getElementById(`addStep${currentStep}`).classList.add('active');
+    document.getElementById(`sd${currentStep}`).classList.add('active');
+  }
+}
+function resetAdd(){
+  document.getElementById(`addStep${currentStep}`).classList.remove('active');
+  for(let i=1;i<=4;i++){document.getElementById(`sd${i}`).classList.remove('active','done');}
+  currentStep=1;
+  document.getElementById('addStep1').classList.add('active');
+  document.getElementById('sd1').classList.add('active');
+  renderAddTags();
+}
+
+window.addEventListener('popstate',()=>showScreen('screen-home'));
+history.pushState({},'','');
+
+const userCoins=84;
+const userPoints=1290;
+
+const shopItems=[
+  {emoji:"☕",name:"Free coffee",place:"Morning Brew",cost:20,img:"https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?w=200&q=80",redeemed:true},
+  {emoji:"🧁",name:"Free pastry",place:"Bean Theory",cost:30,img:"https://images.unsplash.com/photo-1554118811-1e0d58224f24?w=200&q=80",redeemed:true},
+  {emoji:"🍺",name:"First drink on us",place:"Old Harbor Spot",cost:40,img:"https://images.unsplash.com/photo-1466978913421-dad2ebd01d17?w=200&q=80",redeemed:false},
+  {emoji:"🎟️",name:"Free entry",place:"Canvas Nights",cost:50,img:"https://images.unsplash.com/photo-1518998053901-5348d3961a04?w=200&q=80",redeemed:false},
+  {emoji:"🍜",name:"10% off your bill",place:"Kumo Kitchen",cost:60,img:"https://images.unsplash.com/photo-1569050467447-ce54b3bbc37d?w=200&q=80",redeemed:false},
+  {emoji:"🍹",name:"Free cocktail",place:"Velvet Hour",cost:80,img:"https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?w=200&q=80",redeemed:false},
+  {emoji:"🌟",name:"Priority reservation",place:"Sakura Omakase",cost:120,img:"https://images.unsplash.com/photo-1579871494447-9811cf80d66c?w=200&q=80",redeemed:false},
+  {emoji:"👑",name:"VIP table for 4",place:"Velvet Hour",cost:200,img:"https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?w=200&q=80",redeemed:false},
+  {emoji:"🍱",name:"Full omakase (2 people)",place:"Sakura Omakase",cost:400,img:"https://images.unsplash.com/photo-1579871494447-9811cf80d66c?w=200&q=80",redeemed:false},
+];
+
+const ranks=[
+  {emoji:"🗺️",name:"Explorer",range:"0 – 500 pts",current:false,color:"var(--text3)"},
+  {emoji:"📍",name:"Local",range:"500 – 2,000 pts",current:true,color:"var(--gold)"},
+  {emoji:"🎯",name:"Insider",range:"2,000 – 5,000 pts",current:false,color:"#378ADD"},
+  {emoji:"👑",name:"Vibe Authority",range:"5,000+ pts",current:false,color:"var(--red)"},
+];
+
+
+function renderRewardShop(){
+  const shop=document.getElementById('rewardShop');
+  if(!shop)return;
+
+  const tiers=[
+    {label:'Quick wins',color:'#639922',items:shopItems.slice(0,3)},
+    {label:'Building up',color:'#378ADD',items:shopItems.slice(3,6)},
+    {label:'Crazy rewards',color:'var(--red)',items:shopItems.slice(6)},
+  ];
+
+  let html='';
+  tiers.forEach(tier=>{
+    html+=`<div class="shop-tier-label"><div class="stl-line"></div><div class="stl-text" style="color:${tier.color}">${tier.label}</div><div class="stl-line"></div></div>`;
+    tier.items.forEach((item)=>{
+      const i=shopItems.indexOf(item);
+      const canAfford=userCoins>=item.cost;
+      const pct=Math.min(100,Math.round((userCoins/item.cost)*100));
+      html+=`<div class="shop-card${item.redeemed?' redeemed':''}" id="shop-${i}">
+        <div class="sc-img"><img src="${item.img}" alt="${item.name}" loading="lazy"></div>
+        <div class="sc-info">
+          <div class="sc-name">${item.emoji} ${item.name}</div>
+          <div class="sc-place">${item.place}</div>
+          <div class="sc-cost" style="margin-bottom:${item.redeemed?0:6}px">🪙 ${item.cost} coins</div>
+          ${!item.redeemed?`<div style="height:3px;background:var(--dark);border-radius:2px;overflow:hidden"><div style="height:100%;width:${pct}%;background:${canAfford?tier.color:'var(--border2)'};border-radius:2px"></div></div>`:''}
+        </div>
+        <div class="sc-action">
+          ${item.redeemed
+            ?'<div class="sc-redeemed">✓ Used</div>'
+            :canAfford
+              ?`<button class="sc-redeem-btn" onclick="redeemReward(${i})">Redeem</button>`
+              :`<div style="text-align:center"><div style="font-size:10px;color:var(--text3);margin-bottom:4px">Need</div><div style="font-size:12px;color:#378ADD;font-weight:500">${item.cost-userCoins} 🪙</div></div>`
+          }
+        </div>
+      </div>`;
+    });
+  });
+  shop.innerHTML=html;
+  renderRankLadder();
+}
+
+function renderRankLadder(){
+  const rank=document.getElementById('rankLadder');
+  if(!rank)return;
+  rank.innerHTML=`<div style="font-size:13px;color:var(--text2);margin-bottom:16px;line-height:1.6">Your rank is based on <span style="color:var(--gold);font-weight:500">Vibe Points only</span> — never affected by coin spending.</div>`
+  +ranks.map((r)=>{
+    return`<div class="rank-card${r.current?' current-rank':''}" style="margin-bottom:10px">
+      <div class="rc-badge" style="background:${r.current?'rgba(200,169,110,0.15)':'var(--dark4)'};border:${r.current?'1.5px solid var(--gold)':'1.5px solid transparent'}">${r.emoji}</div>
+      <div class="rc-info">
+        <div class="rc-name" style="color:${r.current?r.color:'var(--text2)'};font-weight:${r.current?500:400}">${r.name}</div>
+        <div class="rc-range">${r.range}</div>
+        ${r.current?`<div style="margin-top:6px;height:4px;background:var(--dark);border-radius:2px;overflow:hidden"><div style="height:100%;width:64%;background:linear-gradient(90deg,#8B6914,var(--gold));border-radius:2px"></div></div><div style="font-size:10px;color:var(--text3);margin-top:4px">710 pts to <span style="color:#378ADD">Insider</span></div>`:''}
+      </div>
+      ${r.current?'<div class="rc-you">You are here</div>':''}
+    </div>`;
+  }).join('');
+}
+
+function switchRewardTab(tab,el){
+  document.querySelectorAll('.rtab').forEach(t=>{
+    t.style.color='var(--text3)';
+    t.style.borderBottom='2px solid transparent';
+  });
+  el.style.color='var(--gold)';
+  el.style.borderBottom='2px solid var(--gold)';
+  document.getElementById('rewardShop').style.display=tab==='shop'?'block':'none';
+  document.getElementById('rankLadder').style.display=tab==='rank'?'block':'none';
+}
+
+function redeemReward(idx){
+  const item=shopItems[idx];
+  if(userCoins<item.cost){showToast('Not enough 🪙 coins');return;}
+  item.redeemed=true;
+  showToast(item.emoji+' Redeemed! Your '+userPoints.toLocaleString()+' pts unchanged');
+  renderRewardShop();
+}
+
+renderStories();renderGrid();renderExplore();renderRewardShop();renderProfile();renderAddTags();
+</script>
+</body>
+</html>
