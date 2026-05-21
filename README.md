@@ -3,4 +3,4 @@ Vibe Check — A real-time vibe discovery app that shows you what a place actual
 ##LINKS
 
 Live Prototype: https://sanyukta-jha.github.io/vibecheck/
-Product Case Study: 
+Product Case Study: https://sanyukta-jha.github.io/vibecheck/vibecheck_product_case_study.html
