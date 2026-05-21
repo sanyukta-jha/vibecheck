@@ -13,44 +13,26 @@ VibeCheck is a real-time vibe discovery platform that helps people understand wh
 
 ---
 
-## Why I Built This
+## The Idea
 
-I noticed that most discovery platforms tell people *what* a place is — but not *how it feels*.
+Most platforms tell people *what* a place is.  
+VibeCheck helps people understand *how it feels* before they go.
 
-People often go somewhere and realize:
-- it’s too loud
-- too romantic
-- too crowded
-- too dead
-- not aesthetic
-- not social enough
-- completely different from expectations
-
-VibeCheck solves this discovery gap by helping users explore places based on energy, vibe, and real experience.
+Built around:
+- mood-based discovery
+- real-time social energy
+- live updates
+- vibe-first exploration
+- real user experiences
 
 ---
 
-## What I Built
-
-A product prototype focused on:
-- vibe-based place discovery
-- mood filters
-- social energy indicators
-- visual storytelling
-- personalized exploration
-
-The project combines product thinking, UX experimentation, and user research into a single interactive experience.
-
----
-
-## Product Process
+## Product Work
 
 - 35 user interviews
 - 4 prototype iterations
 - Competitive analysis
 - User testing observations
-- Product strategy thinking
-- Full PM-style case study
 
 ---
 
