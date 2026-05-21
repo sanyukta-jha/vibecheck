@@ -1,7 +1,5 @@
 # vibecheck
 
-## Preview
-
 ![VibeCheck Preview](cover.png)
 
 VibeCheck is a real-time vibe discovery platform that helps people understand what a place actually *feels* like before going there.
